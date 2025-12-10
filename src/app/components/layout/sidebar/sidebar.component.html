@@ -1,0 +1,32 @@
+<aside class="sidebar" [class.collapsed]="isCollapsed">
+  <!-- Logo Section -->
+  <div class="sidebar-logo">
+    <div class="logo-icon">🏨</div>
+    <span class="logo-text" *ngIf="!isCollapsed">HMS</span>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li *ngFor="let item of menuItems" class="nav-item">
+        <a 
+          [routerLink]="item.route" 
+          routerLinkActive="active" 
+          class="nav-link"
+          [title]="isCollapsed ? item.label : ''"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-label" *ngIf="!isCollapsed">{{ item.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <button class="toggle-btn" (click)="toggleSidebar()">
+      <span class="toggle-icon">{{ isCollapsed ? '→' : '←' }}</span>
+      <span class="toggle-text" *ngIf="!isCollapsed">Collapse</span>
+    </button>
+  </div>
+</aside>

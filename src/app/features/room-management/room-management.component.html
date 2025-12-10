@@ -1,0 +1,311 @@
+<div class="room-management">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Room Management</h1>
+      <p class="page-subtitle">Manage all {{ roomStats.total }} rooms across {{ floors.length }} floors</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="showAddTypeModal = true">
+        <span>📋</span> Room Types
+      </button>
+      <button class="btn btn-primary" (click)="showAddRoomModal = true">
+        <span>➕</span> Add Room
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Overview -->
+  <div class="stats-row">
+    <div class="mini-stat" (click)="statusFilter = 'all'" [class.active]="statusFilter === 'all'">
+      <span class="mini-stat-value">{{ roomStats.total }}</span>
+      <span class="mini-stat-label">Total Rooms</span>
+    </div>
+    <div class="mini-stat vacant" (click)="statusFilter = 'vacant'" [class.active]="statusFilter === 'vacant'">
+      <span class="mini-stat-icon">✅</span>
+      <span class="mini-stat-value">{{ roomStats.vacant }}</span>
+      <span class="mini-stat-label">Vacant</span>
+    </div>
+    <div class="mini-stat occupied" (click)="statusFilter = 'occupied'" [class.active]="statusFilter === 'occupied'">
+      <span class="mini-stat-icon">🔒</span>
+      <span class="mini-stat-value">{{ roomStats.occupied }}</span>
+      <span class="mini-stat-label">Occupied</span>
+    </div>
+    <div class="mini-stat dirty" (click)="statusFilter = 'dirty'" [class.active]="statusFilter === 'dirty'">
+      <span class="mini-stat-icon">🧹</span>
+      <span class="mini-stat-value">{{ roomStats.dirty }}</span>
+      <span class="mini-stat-label">Dirty</span>
+    </div>
+    <div class="mini-stat maintenance" (click)="statusFilter = 'maintenance'"
+      [class.active]="statusFilter === 'maintenance'">
+      <span class="mini-stat-icon">🔧</span>
+      <span class="mini-stat-value">{{ roomStats.maintenance }}</span>
+      <span class="mini-stat-label">Maintenance</span>
+    </div>
+  </div>
+
+  <!-- Filters & Controls -->
+  <div class="controls-bar">
+    <div class="filters">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="form-input search-input" placeholder="Search room number or guest..."
+          [(ngModel)]="searchQuery">
+      </div>
+
+      <select class="form-select filter-select" [(ngModel)]="typeFilter">
+        <option value="all">All Types</option>
+        <option *ngFor="let type of roomTypes" [value]="type.name">{{ type.name }}</option>
+      </select>
+
+      <select class="form-select filter-select" [(ngModel)]="floorFilter">
+        <option value="all">All Floors</option>
+        <option *ngFor="let floor of floors" [value]="floor">Floor {{ floor }}</option>
+      </select>
+    </div>
+
+    <div class="view-toggle">
+      <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'">
+        <span>▦</span> Grid
+      </button>
+      <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'">
+        <span>☰</span> List
+      </button>
+    </div>
+  </div>
+
+  <!-- Room Grid View -->
+  <div class="rooms-grid" *ngIf="viewMode === 'grid'">
+    <div *ngFor="let room of filteredRooms" class="room-card" [class]="room.status" (click)="openRoomDetails(room)">
+      <div class="room-card-header">
+        <span class="room-number">{{ room.number }}</span>
+        <span class="room-status-icon">{{ getStatusIcon(room.status) }}</span>
+      </div>
+      <div class="room-card-body">
+        <span class="room-type">{{ getRoomTypeName(room) }}</span>
+        <span class="room-rate">₹{{ getRoomBaseRate(room) | number }}/night</span>
+      </div>
+      <div class="room-card-footer" *ngIf="room.status === 'Occupied'">
+        <span class="guest-name">Occupied</span>
+        <span class="checkout-date">C/O: N/A</span>
+      </div>
+      <div class="room-card-footer" *ngIf="room.status === 'Dirty'">
+        <span class="dirty-badge">🧹 Dirty</span>
+        <button class="btn btn-sm btn-success" (click)="markAsClean(room); $event.stopPropagation()">
+          Mark Clean
+        </button>
+      </div>
+      <div class="room-card-footer" *ngIf="room.status === 'Maintenance'">
+        <span class="maintenance-badge">Under Repair</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Room List View -->
+  <div class="rooms-list" *ngIf="viewMode === 'list'">
+    <div class="card">
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Room</th>
+              <th>Floor</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Rate/Night</th>
+              <th>Guest</th>
+              <th>Checkout</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let room of filteredRooms" (click)="openRoomDetails(room)">
+              <td>
+                <span class="room-number-badge">{{ room.number }}</span>
+              </td>
+              <td>Floor {{ room.floor }}</td>
+              <td>{{ getRoomTypeName(room) }}</td>
+              <td>
+                <span class="badge" [class]="'badge-' + room.status">
+                  {{ getStatusIcon(room.status) }} {{ room.status }}
+                </span>
+              </td>
+              <td>₹{{ getRoomBaseRate(room) | number }}</td>
+              <td>-</td>
+              <td>-</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-ghost" title="View Details">👁️</button>
+                  <button class="btn btn-sm btn-ghost" title="Edit">✏️</button>
+                  <button *ngIf="room.status === 'Dirty'" class="btn btn-sm btn-success"
+                    (click)="markAsClean(room); $event.stopPropagation()">
+                    Clean
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Room Types Section -->
+  <div class="room-types-section">
+    <div class="section-header">
+      <h2 class="section-title">Room Types & Pricing</h2>
+    </div>
+    <div class="room-types-grid">
+      <div *ngFor="let type of roomTypes" class="room-type-card">
+        <div class="type-header">
+          <h3 class="type-name">{{ type.name }}</h3>
+          <span class="type-count">{{ getRoomTypeCount(type) }} rooms</span>
+        </div>
+        <div class="type-rate">
+          <span class="rate-value">₹{{ type.baseRate | number }}</span>
+          <span class="rate-period">/night</span>
+        </div>
+        <div class="type-details">
+          <div class="detail-item">
+            <span class="detail-icon">👥</span>
+            <span>Max {{ type.maxGuests }} guests</span>
+          </div>
+        </div>
+        <div class="type-amenities">
+          <span *ngFor="let amenity of getRoomTypeAmenities(type).slice(0, 4)" class="amenity-tag">{{ amenity }}</span>
+          <span *ngIf="getRoomTypeAmenities(type).length > 4" class="amenity-more">+{{ getRoomTypeAmenities(type).length
+            - 4 }} more</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Room Modal -->
+  <div class="modal-overlay" [class.active]="showAddRoomModal" (click)="closeModals()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Room</h3>
+        <button class="btn btn-icon btn-ghost" (click)="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Room Number</label>
+          <input type="text" class="form-input" placeholder="e.g., 401" [(ngModel)]="newRoom.number">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Floor</label>
+            <select class="form-select" [(ngModel)]="newRoom.floor">
+              <option [value]="1">Floor 1</option>
+              <option [value]="2">Floor 2</option>
+              <option [value]="3">Floor 3</option>
+              <option [value]="4">Floor 4</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Room Type</label>
+            <select class="form-select" [(ngModel)]="newRoom.typeId">
+              <option *ngFor="let type of roomTypes" [value]="type.typeId">{{ type.name }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button class="btn btn-primary" (click)="addRoom()">Add Room</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Room Details Modal -->
+  <div class="modal-overlay" [class.active]="showRoomDetailsModal" (click)="closeModals()">
+    <div class="modal modal-lg" (click)="$event.stopPropagation()" *ngIf="selectedRoom">
+      <div class="modal-header">
+        <h3 class="modal-title">Room {{ selectedRoom.number }} Details</h3>
+        <button class="btn btn-icon btn-ghost" (click)="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="room-detail-grid">
+          <div class="detail-section">
+            <h4>Room Information</h4>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="label">Room Number:</span>
+                <span class="value">{{ selectedRoom.number }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Floor:</span>
+                <span class="value">{{ selectedRoom.floor }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Type:</span>
+                <span class="value">{{ getRoomTypeName(selectedRoom) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Base Rate:</span>
+                <span class="value">₹{{ getRoomBaseRate(selectedRoom) | number }}/night</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Max Guests:</span>
+                <span class="value">{{ getRoomMaxGuests(selectedRoom) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Status:</span>
+                <span class="badge" [class]="'badge-' + selectedRoom.status">
+                  {{ getStatusIcon(selectedRoom.status) }} {{ selectedRoom.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="selectedRoom.status === 'Occupied'">
+            <h4>Current Guest</h4>
+            <div class="detail-list">
+              <div class="detail-row">
+                <span class="label">Guest Name:</span>
+                <span class="value">Guest in Room</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Checkout Date:</span>
+                <span class="value">N/A</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Amenities</h4>
+            <div class="amenities-list">
+              <span *ngFor="let amenity of getRoomAmenities(selectedRoom)" class="amenity-badge">
+                {{ amenity }}
+              </span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Change Status</h4>
+            <div class="status-buttons">
+              <button class="btn btn-sm" [class.btn-success]="selectedRoom.status !== 'Vacant'"
+                [class.active]="selectedRoom.status === 'Vacant'" (click)="updateRoomStatus(selectedRoom, 'Vacant')"
+                [disabled]="selectedRoom.status === 'Occupied'">
+                ✅ Vacant
+              </button>
+              <button class="btn btn-sm" [class.btn-warning]="selectedRoom.status !== 'Dirty'"
+                [class.active]="selectedRoom.status === 'Dirty'" (click)="updateRoomStatus(selectedRoom, 'Dirty')">
+                🧹 Dirty
+              </button>
+              <button class="btn btn-sm" [class.btn-danger]="selectedRoom.status !== 'Maintenance'"
+                [class.active]="selectedRoom.status === 'Maintenance'"
+                (click)="updateRoomStatus(selectedRoom, 'Maintenance')">
+                🔧 Maintenance
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModals()">Close</button>
+        <button class="btn btn-primary">Edit Room</button>
+      </div>
+    </div>
+  </div>
+</div>

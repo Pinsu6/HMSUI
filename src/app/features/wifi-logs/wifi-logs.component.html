@@ -1,0 +1,63 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>WiFi Access Logs</h1>
+      <p class="subtitle">Monitor Guest WiFi Usage & Status</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-refresh" (click)="loadLogs()">
+        <span class="icon">↻</span> Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Log ID</th>
+            <th>Booking ID</th>
+            <th>Room Number</th>
+            <th>Action</th>
+            <th>Status</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of logs" class="table-row">
+            <td>#{{ log.logId }}</td>
+            <td>{{ log.bookingId }}</td>
+            <td>
+              <span class="room-badge">{{ log.roomNumber }}</span>
+            </td>
+            <td>
+              <span class="action-badge" [class.create]="log.apiAction === 'Create'"
+                [class.expire]="log.apiAction === 'Expire'">
+                {{ log.apiAction }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [class.success]="log.status === 'Success'"
+                [class.failed]="log.status === 'Failed'">
+                {{ log.status }}
+              </span>
+            </td>
+            <td class="timestamp">{{ log.timestamp | date:'medium' }}</td>
+          </tr>
+          <tr *ngIf="logs.length === 0 && !isLoading" class="empty-state">
+            <td colspan="6">
+              <div class="empty-content">
+                <span class="empty-icon">📡</span>
+                <p>No WiFi logs found</p>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="isLoading" class="loading-state">
+            <td colspan="6">Loading logs...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

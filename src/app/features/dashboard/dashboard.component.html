@@ -1,0 +1,250 @@
+<div class="dashboard">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Welcome back, {{ userName }}! Here's what's happening at your hotel today.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" routerLink="/check-in">
+        <span>➕</span> New Check-In
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <!-- Occupancy Card -->
+    <div class="stat-card occupancy-card">
+      <div class="stat-card-header">
+        <div class="stat-card-icon occupancy">🏨</div>
+        <div class="occupancy-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="ring-bg" cx="50" cy="50" r="40" />
+            <circle class="ring-fill" cx="50" cy="50" r="40" [style.stroke-dasharray]="251.2"
+              [style.stroke-dashoffset]="251.2 - (251.2 * occupancyRate / 100)" />
+          </svg>
+          <span class="ring-value">{{ occupancyRate }}%</span>
+        </div>
+      </div>
+      <div class="stat-card-body">
+        <span class="stat-card-value">{{ stats.occupiedRooms }}/{{ stats.totalRooms }}</span>
+        <span class="stat-card-label">Rooms Occupied</span>
+      </div>
+    </div>
+
+    <!-- Vacant Rooms -->
+    <div class="stat-card">
+      <div class="stat-card-icon vacant">🛏️</div>
+      <span class="stat-card-value">{{ stats.vacantRooms }}</span>
+      <span class="stat-card-label">Vacant Rooms</span>
+      <div class="stat-card-footer success">
+        <span>Available for booking</span>
+      </div>
+    </div>
+
+    <!-- Today's Check-ins -->
+    <div class="stat-card">
+      <div class="stat-card-icon checkin">📥</div>
+      <span class="stat-card-value">{{ stats.todaysCheckIns }}</span>
+      <span class="stat-card-label">Today's Check-ins</span>
+      <div class="stat-card-footer info">
+        <span>Expected arrivals</span>
+      </div>
+    </div>
+
+    <!-- Today's Check-outs -->
+    <div class="stat-card">
+      <div class="stat-card-icon checkout">📤</div>
+      <span class="stat-card-value">{{ stats.todaysCheckOuts }}</span>
+      <span class="stat-card-label">Today's Check-outs</span>
+      <div class="stat-card-footer warning">
+        <span>Pending departures</span>
+      </div>
+    </div>
+
+    <!-- Total Guests -->
+    <div class="stat-card">
+      <div class="stat-card-icon guests">👥</div>
+      <span class="stat-card-value">{{ stats.totalGuestsInHouse }}</span>
+      <span class="stat-card-label">Guests In-House</span>
+      <div class="stat-card-footer">
+        <span>Currently staying</span>
+      </div>
+    </div>
+
+    <!-- Dirty Rooms -->
+    <div class="stat-card">
+      <div class="stat-card-icon dirty">🧹</div>
+      <span class="stat-card-value">{{ stats.dirtyRooms }}</span>
+      <span class="stat-card-label">Rooms to Clean</span>
+      <div class="stat-card-footer danger">
+        <span>Needs attention</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="dashboard-content">
+    <!-- Left Column -->
+    <div class="dashboard-main">
+      <!-- Today's Arrivals -->
+      <div class="card animate-slide-up">
+        <div class="card-header">
+          <h3 class="card-title">📥 Today's Arrivals</h3>
+          <a routerLink="/check-in" class="view-all">View All →</a>
+        </div>
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Guest Name</th>
+                <th>Room</th>
+                <th>Time</th>
+                <th>Guests</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let arrival of todayArrivals">
+                <td>
+                  <div class="guest-info">
+                    <span class="guest-avatar">{{ arrival.guest?.fullName?.charAt(0) || 'G' }}</span>
+                    <span class="guest-name">{{ arrival.guest?.fullName || 'Guest' }}</span>
+                  </div>
+                </td>
+                <td><span class="room-number">{{ arrival.room?.number }}</span></td>
+                <td>{{ arrival.checkInTime | date:'shortTime' }}</td>
+                <td>{{ arrival.adults + arrival.children }}</td>
+                <td>
+                  <span class="badge" [class.badge-success]="arrival.status === 'Active'"
+                    [class.badge-warning]="arrival.status !== 'Active'">
+                    {{ arrival.status }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-primary">Check-In</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Today's Departures -->
+      <div class="card animate-slide-up">
+        <div class="card-header">
+          <h3 class="card-title">📤 Today's Departures</h3>
+          <a routerLink="/check-out" class="view-all">View All →</a>
+        </div>
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Guest Name</th>
+                <th>Room</th>
+                <th>Time</th>
+                <th>Balance</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let departure of todayDepartures">
+                <td>
+                  <div class="guest-info">
+                    <span class="guest-avatar">{{ departure.guest?.fullName?.charAt(0) || 'G' }}</span>
+                    <span class="guest-name">{{ departure.guest?.fullName || 'Guest' }}</span>
+                  </div>
+                </td>
+                <td><span class="room-number">{{ departure.room?.number }}</span></td>
+                <td>{{ departure.expectedCheckOutTime | date:'shortTime' }}</td>
+                <td>
+                  <span [class.text-danger]="departure.totalAmount > 0">
+                    ₹{{ departure.totalAmount | number }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [class.badge-success]="departure.status === 'Completed'"
+                    [class.badge-warning]="departure.status === 'Active'">
+                    {{ departure.status }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm" [class.btn-secondary]="departure.status === 'Completed'"
+                    [class.btn-danger]="departure.status === 'Active'">
+                    {{ departure.status === 'Completed' ? 'Invoice' : 'Check-Out' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Room Status Grid -->
+      <div class="card animate-slide-up">
+        <div class="card-header">
+          <h3 class="card-title">🏠 Room Status Overview</h3>
+          <a routerLink="/rooms" class="view-all">Manage Rooms →</a>
+        </div>
+        <div class="room-status-legend">
+          <div class="legend-item">
+            <span class="legend-dot vacant"></span>
+            <span>Vacant</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot occupied"></span>
+            <span>Occupied</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot dirty"></span>
+            <span>Dirty</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot maintenance"></span>
+            <span>Maintenance</span>
+          </div>
+        </div>
+        <div class="room-grid">
+          <div *ngFor="let room of rooms" class="room-tile" [class]="getRoomStatus(room)">
+            <span class="room-number">{{ room.number }}</span>
+            <span class="room-type">{{ room.roomType?.name }}</span>
+            <span class="room-guest" *ngIf="getRoomGuest(room)">{{ getRoomGuest(room) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Sidebar -->
+    <div class="dashboard-sidebar">
+      <!-- Alerts and Recent Activity sections removed as they were demo-only -->
+
+      <!-- Quick Actions -->
+      <div class="card quick-actions-card animate-slide-up">
+        <div class="card-header">
+          <h3 class="card-title">⚡ Quick Actions</h3>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-action-btn" routerLink="/check-in">
+            <span class="action-icon">📝</span>
+            <span>New Check-In</span>
+          </button>
+          <!-- <button class="quick-action-btn" routerLink="/guests">
+            <span class="action-icon">👤</span>
+            <span>Add Guest</span>
+          </button> -->
+          <button class="quick-action-btn" routerLink="/rooms">
+            <span class="action-icon">🛏️</span>
+            <span>Room Status</span>
+          </button>
+          <button class="quick-action-btn" routerLink="/billing">
+            <span class="action-icon">🧾</span>
+            <span>Generate Bill</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

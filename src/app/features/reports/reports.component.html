@@ -1,0 +1,245 @@
+<div class="reports">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Reports & Analytics</h1>
+      <p class="page-subtitle">View detailed reports and analytics</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="printReport()">
+        <span>🖨️</span> Print
+      </button>
+      <button class="btn btn-secondary" (click)="exportReport('pdf')">
+        <span>📥</span> Export PDF
+      </button>
+      <button class="btn btn-primary" (click)="exportReport('excel')">
+        <span>📊</span> Export Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- Date Filter -->
+  <div class="date-filter">
+    <div class="date-inputs">
+      <div class="form-group">
+        <label class="form-label">From Date</label>
+        <input type="date" class="form-input" [(ngModel)]="dateFrom">
+      </div>
+      <div class="form-group">
+        <label class="form-label">To Date</label>
+        <input type="date" class="form-input" [(ngModel)]="dateTo">
+      </div>
+      <button class="btn btn-primary">Apply Filter</button>
+    </div>
+    <div class="quick-filters">
+      <button class="quick-filter-btn active">Today</button>
+      <button class="quick-filter-btn">This Week</button>
+      <button class="quick-filter-btn">This Month</button>
+      <button class="quick-filter-btn">Last 30 Days</button>
+    </div>
+  </div>
+
+  <!-- Report Tabs -->
+  <div class="report-tabs">
+    <button class="report-tab" [class.active]="activeTab === 'revenue'" (click)="activeTab = 'revenue'">
+      <span class="tab-icon">💰</span>
+      Revenue Report
+    </button>
+    <button class="report-tab" [class.active]="activeTab === 'occupancy'" (click)="activeTab = 'occupancy'">
+      <span class="tab-icon">🏨</span>
+      Occupancy Report
+    </button>
+    <button class="report-tab" [class.active]="activeTab === 'payments'" (click)="activeTab = 'payments'">
+      <span class="tab-icon">💳</span>
+      Payment Summary
+    </button>
+    <button class="report-tab" [class.active]="activeTab === 'gst'" (click)="activeTab = 'gst'">
+      <span class="tab-icon">📋</span>
+      GST Report
+    </button>
+  </div>
+
+  <!-- Revenue Report -->
+  <div class="report-content" *ngIf="activeTab === 'revenue'">
+    <div class="revenue-grid">
+      <!-- Total Revenue Card -->
+      <div class="stat-card large">
+        <div class="stat-header">
+          <span class="stat-icon revenue">💰</span>
+          <span class="stat-growth positive">+{{ revenueData.growth }}%</span>
+        </div>
+        <div class="stat-value large">₹{{ revenueData.totalRevenue | number }}</div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-footer">
+          <span>Daily Average: ₹{{ revenueData.dailyAverage | number }}</span>
+        </div>
+      </div>
+
+      <!-- Revenue Breakdown -->
+      <div class="card breakdown-card">
+        <h3 class="card-title">Revenue Breakdown</h3>
+        <div class="breakdown-list">
+          <div class="breakdown-item">
+            <div class="breakdown-info">
+              <span class="breakdown-icon">🛏️</span>
+              <span class="breakdown-label">Room Revenue</span>
+            </div>
+            <div class="breakdown-values">
+              <span class="breakdown-amount">₹{{ revenueData.roomRevenue | number }}</span>
+              <span class="breakdown-percent">0%</span>
+            </div>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <div class="breakdown-info">
+              <span class="breakdown-icon">🍽️</span>
+              <span class="breakdown-label">Food & Beverage</span>
+            </div>
+            <div class="breakdown-values">
+              <span class="breakdown-amount">₹{{ revenueData.foodRevenue | number }}</span>
+              <span class="breakdown-percent">0%</span>
+            </div>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <div class="breakdown-info">
+              <span class="breakdown-icon">✨</span>
+              <span class="breakdown-label">Other Services</span>
+            </div>
+            <div class="breakdown-values">
+              <span class="breakdown-amount">₹{{ revenueData.otherRevenue | number }}</span>
+              <span class="breakdown-percent">0%</span>
+            </div>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Recent Transactions</h3>
+        <a href="#" class="view-all">View All →</a>
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Guest</th>
+              <th>Room</th>
+              <th>Type</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tx of recentTransactions">
+              <td>{{ tx.date }}</td>
+              <td>{{ tx.guest }}</td>
+              <td><span class="room-badge">{{ tx.room }}</span></td>
+              <td><span class="type-badge" [class]="tx.type.toLowerCase()">{{ tx.type }}</span></td>
+              <td class="amount">₹{{ tx.amount | number }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Occupancy Report -->
+  <div class="report-content" *ngIf="activeTab === 'occupancy'">
+    <div class="occupancy-grid">
+      <div class="stat-card">
+        <div class="stat-icon occupancy">📊</div>
+        <div class="stat-value">{{ occupancyData.averageOccupancy }}%</div>
+        <div class="stat-label">Average Occupancy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon peak">📈</div>
+        <div class="stat-value">{{ occupancyData.peakOccupancy }}%</div>
+        <div class="stat-label">Peak Occupancy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon low">📉</div>
+        <div class="stat-value">{{ occupancyData.lowOccupancy }}%</div>
+        <div class="stat-label">Lowest Occupancy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon nights">🌙</div>
+        <div class="stat-value">{{ occupancyData.occupiedNights }}</div>
+        <div class="stat-label">Room Nights Sold</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="card-title">Occupancy Trend</h3>
+      <div class="chart-placeholder">
+        <div class="chart-bars" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+          <span class="text-muted">No Data Available</span>
+        </div>
+        <div class="chart-labels">
+          <span>Mon</span>
+          <span>Tue</span>
+          <span>Wed</span>
+          <span>Thu</span>
+          <span>Fri</span>
+          <span>Sat</span>
+          <span>Sun</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Summary -->
+  <div class="report-content" *ngIf="activeTab === 'payments'">
+    <div class="payment-grid">
+      <div *ngFor="let payment of paymentSummary" class="payment-card">
+        <div class="payment-icon">{{ payment.mode === 'Cash' ? '💵' : payment.mode === 'Card' ? '💳' : payment.mode ===
+          'UPI' ? '📱' : '🏦' }}</div>
+        <div class="payment-info">
+          <span class="payment-mode">{{ payment.mode }}</span>
+          <span class="payment-amount">₹{{ payment.amount | number }}</span>
+        </div>
+        <div class="payment-percent">{{ payment.percentage }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GST Report -->
+  <div class="report-content" *ngIf="activeTab === 'gst'">
+    <div class="gst-summary">
+      <div class="card gst-card">
+        <h3 class="card-title">GST Summary</h3>
+        <div class="gst-grid">
+          <div class="gst-item">
+            <span class="gst-label">Total Taxable Amount</span>
+            <span class="gst-value">₹{{ gstSummary.totalTaxable | number }}</span>
+          </div>
+          <div class="gst-item">
+            <span class="gst-label">CGST (9%)</span>
+            <span class="gst-value">₹{{ gstSummary.cgst | number }}</span>
+          </div>
+          <div class="gst-item">
+            <span class="gst-label">SGST (9%)</span>
+            <span class="gst-value">₹{{ gstSummary.sgst | number }}</span>
+          </div>
+          <div class="gst-item total">
+            <span class="gst-label">Total GST Collected</span>
+            <span class="gst-value">₹{{ gstSummary.totalGst | number }}</span>
+          </div>
+          <div class="gst-item grand-total">
+            <span class="gst-label">Grand Total (with GST)</span>
+            <span class="gst-value">₹{{ gstSummary.totalWithGst | number }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

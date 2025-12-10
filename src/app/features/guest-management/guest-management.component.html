@@ -1,0 +1,361 @@
+<div class="guest-management">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Guest Management</h1>
+      <p class="page-subtitle">Manage guest profiles and visit history</p>
+    </div>
+    <!-- <div class="header-actions">
+      <button class="btn btn-primary" (click)="showAddGuestModal = true">
+        <span>➕</span> Add Guest
+      </button>
+    </div> -->
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-row">
+    <div class="stat-card-mini">
+      <div class="stat-icon total">👥</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ guestStats.total }}</span>
+        <span class="stat-label">Total Guests</span>
+      </div>
+    </div>
+    <div class="stat-card-mini">
+      <div class="stat-icon active">🏨</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ guestStats.inHouse }}</span>
+        <span class="stat-label">Currently In-House</span>
+      </div>
+    </div>
+    <div class="stat-card-mini">
+      <div class="stat-icon vip">⭐</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ guestStats.vip }}</span>
+        <span class="stat-label">VIP Guests</span>
+      </div>
+    </div>
+    <div class="stat-card-mini">
+      <div class="stat-icon new">✨</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ guestStats.newThisMonth }}</span>
+        <span class="stat-label">New This Month</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filters -->
+  <div class="controls-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="form-input" placeholder="Search by name, phone, email, or ID..."
+        [(ngModel)]="searchQuery">
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="statusFilter === 'all'" (click)="statusFilter = 'all'">
+        All Guests
+      </button>
+      <button class="filter-tab" [class.active]="statusFilter === 'active'" (click)="statusFilter = 'active'">
+        In-House
+      </button>
+      <button class="filter-tab" [class.active]="statusFilter === 'checked-out'" (click)="statusFilter = 'checked-out'">
+        Past Guests
+      </button>
+    </div>
+
+    <div class="view-toggle">
+      <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'">
+        <span>▦</span> Grid
+      </button>
+      <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'">
+        <span>☰</span> List
+      </button>
+    </div>
+  </div>
+
+  <!-- Guest Cards Grid -->
+  <div class="guests-grid" *ngIf="viewMode === 'grid'">
+    <div *ngFor="let guest of filteredGuests" class="guest-card" (click)="openGuestDetails(guest)">
+      <div class="guest-card-header">
+        <div class="guest-avatar" [class.vip]="isVip(guest)">
+          {{ getInitials(guest.fullName) }}
+          <span class="vip-badge" *ngIf="isVip(guest)">⭐</span>
+        </div>
+        <div class="guest-info">
+          <h3 class="guest-name">{{ guest.fullName }}</h3>
+          <span class="guest-contact">{{ guest.mobile }}</span>
+        </div>
+        <span class="status-badge" [class]="guest.status">
+          {{ guest.status === 'active' ? 'In-House' : 'Checked Out' }}
+        </span>
+      </div>
+
+      <div class="guest-card-body">
+        <div class="info-row">
+          <span class="info-label">📧 Email</span>
+          <span class="info-value">{{ guest.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">🆔 {{ guest.idType }}</span>
+          <span class="info-value">{{ guest.idNumber }}</span>
+        </div>
+        <div class="info-row" *ngIf="guest.currentRoom">
+          <span class="info-label">🛏️ Current Room</span>
+          <span class="info-value room-number">{{ guest.currentRoom }}</span>
+        </div>
+      </div>
+
+      <div class="guest-card-footer">
+        <div class="footer-stat">
+          <span class="footer-value">{{ guest.totalVisits }}</span>
+          <span class="footer-label">Visits</span>
+        </div>
+        <div class="footer-stat">
+          <span class="footer-value">₹{{ guest.totalSpent | number }}</span>
+          <span class="footer-label">Total Spent</span>
+        </div>
+        <div class="footer-stat">
+          <span class="footer-value">{{ guest.lastVisit }}</span>
+          <span class="footer-label">Last Visit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guest List View -->
+  <div class="guests-list" *ngIf="viewMode === 'list'">
+    <div class="card">
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Guest</th>
+              <th>Email</th>
+              <th>ID Verification</th>
+              <th>Status</th>
+              <th>Visits</th>
+              <th>Total Spent</th>
+              <th>Last Visit</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let guest of filteredGuests" (click)="openGuestDetails(guest)">
+              <td>
+                <div class="guest-info-cell">
+                  <div class="guest-avatar small" [class.vip]="isVip(guest)">
+                    {{ getInitials(guest.fullName) }}
+                  </div>
+                  <div class="guest-text">
+                    <span class="name">{{ guest.fullName }}</span>
+                    <span class="mobile">{{ guest.mobile }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{{ guest.email || '-' }}</td>
+              <td>
+                <div class="id-info">
+                  <span class="id-type">{{ guest.idType }}</span>
+                  <span class="id-number">{{ guest.idNumber }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge" [class]="guest.status === 'active' ? 'badge-in-house' : 'badge-checked-out'">
+                  {{ guest.status === 'active' ? '🏠 In-House' : '🏃 Checked Out' }}
+                </span>
+              </td>
+              <td>{{ guest.totalVisits }}</td>
+              <td>₹{{ guest.totalSpent | number }}</td>
+              <td>{{ guest.lastVisit || '-' }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-ghost" title="View Details">👁️</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="filteredGuests.length === 0">
+    <span class="empty-icon">👤</span>
+    <h3>No guests found</h3>
+    <p>Try adjusting your search or filters</p>
+  </div>
+
+  <!-- Add Guest Modal -->
+  <div class="modal-overlay" [class.active]="showAddGuestModal" (click)="closeModals()">
+    <div class="modal modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Guest</h3>
+        <button class="btn btn-icon btn-ghost" (click)="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-section">
+          <h4 class="section-title">Personal Information</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" class="form-input" placeholder="Enter full name" [(ngModel)]="newGuest.fullName">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile Number *</label>
+              <input type="tel" class="form-input" placeholder="+91 XXXXX XXXXX" [(ngModel)]="newGuest.mobile">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" placeholder="email@example.com" [(ngModel)]="newGuest.email">
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4 class="section-title">ID Verification (KYC)</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ID Type *</label>
+              <select class="form-select" [(ngModel)]="newGuest.idType">
+                <option *ngFor="let type of idTypes" [value]="type">{{ type }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ID Number *</label>
+              <input type="text" class="form-input" placeholder="Enter ID number" [(ngModel)]="newGuest.idNumber">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4 class="section-title">Address</h4>
+          <div class="form-group">
+            <label class="form-label">Street Address</label>
+            <input type="text" class="form-input" placeholder="Enter street address" [(ngModel)]="newGuest.address">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <input type="text" class="form-input" placeholder="City" [(ngModel)]="newGuest.city">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Country</label>
+              <input type="text" class="form-input" placeholder="Country" [(ngModel)]="newGuest.country">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+        <button class="btn btn-primary" (click)="addGuest()">Add Guest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guest Details Modal -->
+  <div class="modal-overlay" [class.active]="showGuestDetailsModal" (click)="closeModals()">
+    <div class="modal modal-lg" (click)="$event.stopPropagation()" *ngIf="selectedGuest">
+      <div class="modal-header">
+        <div class="modal-title-section">
+          <div class="guest-avatar large" [class.vip]="isVip(selectedGuest)">
+            {{ getInitials(selectedGuest.fullName) }}
+            <span class="vip-badge" *ngIf="isVip(selectedGuest)">⭐</span>
+          </div>
+          <div>
+            <h3 class="modal-title">{{ selectedGuest.fullName }}</h3>
+            <span class="guest-id">Guest ID: #{{ selectedGuest.guestId }}</span>
+          </div>
+        </div>
+        <button class="btn btn-icon btn-ghost" (click)="closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-tabs">
+          <button class="detail-tab active">Profile</button>
+          <button class="detail-tab">Booking History</button>
+          <button class="detail-tab">Preferences</button>
+        </div>
+
+        <div class="detail-content">
+          <div class="detail-grid">
+            <div class="detail-card">
+              <h4>Contact Information</h4>
+              <div class="detail-item">
+                <span class="detail-icon">📱</span>
+                <div>
+                  <span class="detail-label">Mobile</span>
+                  <span class="detail-value">{{ selectedGuest.mobile }}</span>
+                </div>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">📧</span>
+                <div>
+                  <span class="detail-label">Email</span>
+                  <span class="detail-value">{{ selectedGuest.email }}</span>
+                </div>
+              </div>
+              <div class="detail-item">
+                <span class="detail-icon">📍</span>
+                <div>
+                  <span class="detail-label">Address</span>
+                  <span class="detail-value">{{ selectedGuest.address }}, {{ selectedGuest.city }}, {{
+                    selectedGuest.country }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <h4>ID Verification</h4>
+              <div class="detail-item">
+                <span class="detail-icon">🆔</span>
+                <div>
+                  <span class="detail-label">{{ selectedGuest.idType }}</span>
+                  <span class="detail-value">{{ selectedGuest.idNumber }}</span>
+                </div>
+              </div>
+              <div class="verification-status verified">
+                <span>✓</span> Verified
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <h4>Stay Statistics</h4>
+              <div class="stats-grid-mini">
+                <div class="stat-item">
+                  <span class="stat-number">{{ selectedGuest.totalVisits }}</span>
+                  <span class="stat-text">Total Visits</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">₹{{ selectedGuest.totalSpent | number }}</span>
+                  <span class="stat-text">Total Spent</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">{{ selectedGuest.lastVisit }}</span>
+                  <span class="stat-text">Last Visit</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-card" *ngIf="selectedGuest.status === 'active'">
+              <h4>Current Stay</h4>
+              <div class="current-stay-info">
+                <div class="room-display">
+                  <span class="room-icon">🛏️</span>
+                  <span class="room-number-large">{{ selectedGuest.currentRoom }}</span>
+                </div>
+                <div class="stay-actions">
+                  <button class="btn btn-sm btn-secondary">Add Charges</button>
+                  <button class="btn btn-sm btn-danger">Check-Out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModals()">Close</button>
+        <button class="btn btn-primary">Edit Guest</button>
+      </div>
+    </div>
+  </div>
+</div>

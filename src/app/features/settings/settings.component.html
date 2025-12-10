@@ -1,0 +1,377 @@
+<div class="settings">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Settings</h1>
+      <p class="page-subtitle">Configure system preferences and manage users</p>
+    </div>
+  </div>
+
+  <!-- Settings Layout -->
+  <div class="settings-layout">
+    <!-- Sidebar Navigation -->
+    <div class="settings-nav">
+      <button class="nav-item" [class.active]="activeTab === 'general'" (click)="activeTab = 'general'">
+        <span class="nav-icon">🏨</span>
+        <span class="nav-label">Hotel Information</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'tax'" (click)="activeTab = 'tax'">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Tax Settings</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'wifi'" (click)="activeTab = 'wifi'">
+        <span class="nav-icon">📶</span>
+        <span class="nav-label">WiFi Integration</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">User Management</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'backup'" (click)="activeTab = 'backup'">
+        <span class="nav-icon">💾</span>
+        <span class="nav-label">Backup & Data</span>
+      </button>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="settings-content">
+      <!-- General Settings -->
+      <div class="settings-panel" *ngIf="activeTab === 'general'">
+        <div class="panel-header">
+          <h2 class="panel-title">🏨 Hotel Information</h2>
+          <p class="panel-description">Basic information about your hotel</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Hotel Name</label>
+            <input type="text" class="form-input" [(ngModel)]="hotelSettings.name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" [(ngModel)]="hotelSettings.email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" class="form-input" [(ngModel)]="hotelSettings.phone">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Website</label>
+            <input type="url" class="form-input" [(ngModel)]="hotelSettings.website">
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label">Address</label>
+            <textarea class="form-textarea" [(ngModel)]="hotelSettings.address"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">GSTIN</label>
+            <input type="text" class="form-input" [(ngModel)]="hotelSettings.gstin">
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h3 class="section-title">Check-in / Check-out Times</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Default Check-in Time</label>
+            <input type="time" class="form-input" [(ngModel)]="hotelSettings.checkInTime">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Default Check-out Time</label>
+            <input type="time" class="form-input" [(ngModel)]="hotelSettings.checkOutTime">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Currency</label>
+            <select class="form-select" [(ngModel)]="hotelSettings.currency">
+              <option value="INR">INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Timezone</label>
+            <select class="form-select" [(ngModel)]="hotelSettings.timezone">
+              <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+              <option value="America/New_York">America/New_York (EST)</option>
+              <option value="Europe/London">Europe/London (GMT)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="panel-footer">
+          <button class="btn btn-primary" (click)="saveSettings()">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- Tax Settings -->
+      <div class="settings-panel" *ngIf="activeTab === 'tax'">
+        <div class="panel-header">
+          <h2 class="panel-title">📋 Tax Settings</h2>
+          <p class="panel-description">Configure GST and other tax rates</p>
+        </div>
+
+        <div class="toggle-setting">
+          <div class="toggle-info">
+            <span class="toggle-label">Enable GST</span>
+            <span class="toggle-description">Apply Goods and Services Tax on invoices</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="taxSettings.enableGst">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="form-grid" *ngIf="taxSettings.enableGst">
+          <div class="form-group">
+            <label class="form-label">CGST Rate (%)</label>
+            <input type="number" class="form-input" [(ngModel)]="taxSettings.cgstRate">
+          </div>
+          <div class="form-group">
+            <label class="form-label">SGST Rate (%)</label>
+            <input type="number" class="form-input" [(ngModel)]="taxSettings.sgstRate">
+          </div>
+          <div class="form-group">
+            <label class="form-label">IGST Rate (%)</label>
+            <input type="number" class="form-input" [(ngModel)]="taxSettings.igstRate">
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="toggle-setting">
+          <div class="toggle-info">
+            <span class="toggle-label">Enable Service Charge</span>
+            <span class="toggle-description">Add service charge to bills</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="taxSettings.enableServiceCharge">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="form-grid" *ngIf="taxSettings.enableServiceCharge">
+          <div class="form-group">
+            <label class="form-label">Service Charge Rate (%)</label>
+            <input type="number" class="form-input" [(ngModel)]="taxSettings.serviceChargeRate">
+          </div>
+        </div>
+
+        <div class="panel-footer">
+          <button class="btn btn-primary" (click)="saveSettings()">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- WiFi Integration -->
+      <div class="settings-panel" *ngIf="activeTab === 'wifi'">
+        <div class="panel-header">
+          <h2 class="panel-title">📶 WiFi Integration</h2>
+          <p class="panel-description">Configure WiFi automation API settings</p>
+        </div>
+
+        <div class="toggle-setting">
+          <div class="toggle-info">
+            <span class="toggle-label">Enable WiFi Automation</span>
+            <span class="toggle-description">Automatically manage guest WiFi access on check-in/check-out</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="wifiSettings.enabled">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div *ngIf="wifiSettings.enabled">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label class="form-label">API Endpoint</label>
+              <input type="url" class="form-input" [(ngModel)]="wifiSettings.apiEndpoint"
+                placeholder="https://wifi.hotel.com/api">
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">API Key</label>
+              <div class="input-with-button">
+                <input type="password" class="form-input" [(ngModel)]="wifiSettings.apiKey">
+                <button class="btn btn-secondary">Show</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-endpoints">
+            <h4>API Endpoints</h4>
+            <div class="endpoint-item">
+              <span class="endpoint-method post">POST</span>
+              <span class="endpoint-path">{{ wifiSettings.onboardingEndpoint }}</span>
+              <span class="endpoint-label">Guest Onboarding (Check-in)</span>
+            </div>
+            <div class="endpoint-item">
+              <span class="endpoint-method post">POST</span>
+              <span class="endpoint-path">{{ wifiSettings.deactivationEndpoint }}</span>
+              <span class="endpoint-label">Guest Deactivation (Check-out)</span>
+            </div>
+          </div>
+
+          <div class="test-connection">
+            <button class="btn btn-secondary" (click)="testWifiConnection()">
+              🔌 Test Connection
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-footer">
+          <button class="btn btn-primary" (click)="saveSettings()">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- User Management -->
+      <div class="settings-panel" *ngIf="activeTab === 'users'">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">👥 User Management</h2>
+            <p class="panel-description">Manage system users and their roles</p>
+          </div>
+          <button class="btn btn-primary" (click)="showAddUserModal = true">
+            ➕ Add User
+          </button>
+        </div>
+
+        <div class="users-table">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of users">
+                <td>
+                  <div class="user-info">
+                    <span class="user-avatar">{{ user.name.charAt(0) }}</span>
+                    <div>
+                      <span class="user-name">{{ user.name }}</span>
+                      <span class="user-email">{{ user.email }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="role-badge" [class]="user.role.toLowerCase()">{{ user.role }}</span>
+                </td>
+                <td>
+                  <span class="status-badge" [class]="user.status">{{ user.status }}</span>
+                </td>
+                <td>{{ user.lastLogin }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn btn-sm btn-ghost" title="Edit">✏️</button>
+                    <button class="btn btn-sm btn-ghost" title="Toggle Status" (click)="toggleUserStatus(user)">
+                      {{ user.status === 'active' ? '🔒' : '🔓' }}
+                    </button>
+                    <button class="btn btn-sm btn-ghost" title="Delete" (click)="deleteUser(user)">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="roles-info">
+          <h4>Role Permissions</h4>
+          <div class="role-card">
+            <span class="role-name admin">Admin</span>
+            <span class="role-desc">Full access to all features including user management and settings</span>
+          </div>
+          <div class="role-card">
+            <span class="role-name manager">Manager</span>
+            <span class="role-desc">All features except user creation and system settings</span>
+          </div>
+          <div class="role-card">
+            <span class="role-name receptionist">Receptionist</span>
+            <span class="role-desc">Check-in, check-out, add charges, and view dashboard</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Backup & Data -->
+      <div class="settings-panel" *ngIf="activeTab === 'backup'">
+        <div class="panel-header">
+          <h2 class="panel-title">💾 Backup & Data</h2>
+          <p class="panel-description">Manage data backup and restore options</p>
+        </div>
+
+        <div class="backup-actions">
+          <div class="backup-card">
+            <div class="backup-icon">📥</div>
+            <div class="backup-info">
+              <h4>Create Backup</h4>
+              <p>Export all data to a backup file</p>
+            </div>
+            <button class="btn btn-primary">Create Backup</button>
+          </div>
+
+          <div class="backup-card">
+            <div class="backup-icon">📤</div>
+            <div class="backup-info">
+              <h4>Restore Data</h4>
+              <p>Import data from a backup file</p>
+            </div>
+            <button class="btn btn-secondary">Restore</button>
+          </div>
+
+          <div class="backup-card">
+            <div class="backup-icon">📊</div>
+            <div class="backup-info">
+              <h4>Export Reports</h4>
+              <p>Export all reports and analytics</p>
+            </div>
+            <button class="btn btn-secondary">Export</button>
+          </div>
+        </div>
+
+        <div class="last-backup">
+          <span class="backup-label">Last Backup:</span>
+          <span class="backup-date">December 4, 2025 at 11:30 PM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div class="modal-overlay" [class.active]="showAddUserModal" (click)="showAddUserModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New User</h3>
+        <button class="btn btn-icon btn-ghost" (click)="showAddUserModal = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" [(ngModel)]="newUser.name" placeholder="Enter full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" [(ngModel)]="newUser.email" placeholder="Enter email address">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" [(ngModel)]="newUser.password" placeholder="Enter password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-select" [(ngModel)]="newUser.role">
+            <option value="Admin">Admin</option>
+            <option value="Manager">Manager</option>
+            <option value="Receptionist">Receptionist</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showAddUserModal = false">Cancel</button>
+        <button class="btn btn-primary" (click)="addUser()">Add User</button>
+      </div>
+    </div>
+  </div>
+</div>

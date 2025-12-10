@@ -1,0 +1,262 @@
+<div class="check-out">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Guest Check-Out</h1>
+      <p class="page-subtitle">Process guest departures and generate invoices</p>
+    </div>
+  </div>
+
+  <!-- Today's Checkouts Alert -->
+  <div class="checkout-alert" *ngIf="todaysCheckouts.length > 0">
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-content">
+      <strong>{{ todaysCheckouts.length }} checkout{{ todaysCheckouts.length > 1 ? 's' : '' }} pending today</strong>
+      <p>Rooms: {{ todaysCheckoutRooms }}</p>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-box large">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="form-input" placeholder="Search by room number, guest name, or mobile..."
+        [(ngModel)]="searchQuery">
+    </div>
+  </div>
+
+  <!-- Active Bookings Grid -->
+  <div class="bookings-grid">
+    <div *ngFor="let booking of filteredBookings" class="booking-card" [class.urgent]="isDueToday(booking)"
+      (click)="selectBooking(booking)">
+      <div class="booking-card-header">
+        <div class="room-info">
+          <span class="room-number">{{ getRoomNumber(booking) }}</span>
+          <span class="room-type">{{ getRoomType(booking) }}</span>
+        </div>
+        <span class="status-badge" [class]="booking.status">
+          {{ booking.status === 'Active' ? 'Occupied' : 'Completed' }}
+        </span>
+      </div>
+
+      <div class="booking-card-body">
+        <div class="guest-row">
+          <span class="guest-icon">👤</span>
+          <div class="guest-details">
+            <span class="guest-name">{{ getGuestName(booking) }}</span>
+            <span class="guest-mobile">{{ getGuestMobile(booking) }}</span>
+          </div>
+        </div>
+
+        <div class="stay-info">
+          <div class="date-row">
+            <span class="date-label">Check-In</span>
+            <span class="date-value">{{ getCheckInDate(booking) }}</span>
+          </div>
+          <div class="date-row">
+            <span class="date-label">Check-Out</span>
+            <span class="date-value">{{ getCheckOutDate(booking) }}</span>
+          </div>
+          <div class="date-row">
+            <span class="date-label">Duration</span>
+            <span class="date-value">{{ getNights(booking) }} Nights</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="booking-card-footer">
+        <span class="amount-label">Estimated Total</span>
+        <span class="amount-value">₹{{ getNights(booking) * getRoomRate(booking) | number }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="filteredBookings.length === 0">
+    <span class="empty-icon">🏨</span>
+    <h3>No active bookings found</h3>
+    <p>Try a different search or check back later</p>
+  </div>
+
+  <!-- Checkout/Billing Modal -->
+  <div class="modal-overlay" [class.active]="showBillingModal" (click)="closeModal()">
+    <div class="modal modal-xl" (click)="$event.stopPropagation()" *ngIf="selectedBooking">
+      <div class="modal-header">
+        <div class="modal-title-section">
+          <h3 class="modal-title">Check-Out: Room {{ getRoomNumber(selectedBooking) }}</h3>
+          <span class="guest-tag">{{ getGuestName(selectedBooking) }}</span>
+        </div>
+        <button class="btn btn-icon btn-ghost" (click)="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="billing-grid">
+          <!-- Left Column - Charges -->
+          <div class="charges-section">
+            <!-- Stay Summary -->
+            <div class="billing-card">
+              <h4 class="billing-title">📅 Stay Summary</h4>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span class="summary-label">Check-In</span>
+                  <span class="summary-value">{{ getCheckInDate(selectedBooking) }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Check-Out</span>
+                  <span class="summary-value">{{ getCheckOutDate(selectedBooking) }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Duration</span>
+                  <span class="summary-value">{{ getNights(selectedBooking) }} Nights</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Room Rate</span>
+                  <span class="summary-value">₹{{ getRoomRate(selectedBooking) | number }}/night</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional Charges -->
+            <div class="billing-card">
+              <h4 class="billing-title">💵 Additional Charges</h4>
+
+              <!-- Charges List -->
+              <div class="charges-list" *ngIf="charges.length > 0">
+                <div *ngFor="let charge of charges; let i = index" class="charge-item">
+                  <div class="charge-info">
+                    <span class="charge-category">{{ charge.category }}</span>
+                    <span class="charge-description">{{ charge.description }}</span>
+                    <span class="charge-date">{{ charge.date }}</span>
+                  </div>
+                  <div class="charge-actions">
+                    <span class="charge-amount">₹{{ charge.amount | number }}</span>
+                    <button class="btn btn-icon btn-ghost remove-btn" (click)="removeCharge(i)">🗑️</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="no-charges" *ngIf="charges.length === 0">
+                <p>No additional charges added</p>
+              </div>
+
+              <!-- Add Charge Form -->
+              <div class="add-charge-form">
+                <h5>Add New Charge</h5>
+                <div class="form-row">
+                  <div class="form-group">
+                    <select class="form-select" [(ngModel)]="newCharge.category">
+                      <option *ngFor="let cat of chargeCategories" [value]="cat">{{ cat }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <input type="number" class="form-input" placeholder="Amount" [(ngModel)]="newCharge.amount">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group flex-grow">
+                    <input type="text" class="form-input" placeholder="Description" [(ngModel)]="newCharge.description">
+                  </div>
+                  <button class="btn btn-primary" (click)="addCharge()">+ Add</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column - Bill Summary -->
+          <div class="bill-section">
+            <div class="billing-card bill-summary">
+              <h4 class="billing-title">🧾 Bill Summary</h4>
+
+              <!-- Charges Breakdown -->
+              <div class="bill-breakdown">
+                <div class="bill-row">
+                  <span>Room Charges ({{ getNights(selectedBooking) }} × ₹{{ getRoomRate(selectedBooking) | number
+                    }})</span>
+                  <span>₹{{ roomCharges | number }}</span>
+                </div>
+                <div class="bill-row" *ngIf="additionalCharges > 0">
+                  <span>Additional Charges</span>
+                  <span>₹{{ additionalCharges | number }}</span>
+                </div>
+                <div class="bill-row subtotal">
+                  <span>Subtotal</span>
+                  <span>₹{{ subtotal | number }}</span>
+                </div>
+
+                <!-- Discount -->
+                <div class="discount-section">
+                  <h5>Apply Discount</h5>
+                  <div class="discount-inputs">
+                    <div class="discount-input">
+                      <input type="number" class="form-input" placeholder="%" [(ngModel)]="discountPercent"
+                        (ngModelChange)="discountAmount = 0">
+                      <span class="input-suffix">%</span>
+                    </div>
+                    <span class="or-text">or</span>
+                    <div class="discount-input">
+                      <span class="input-prefix">₹</span>
+                      <input type="number" class="form-input" placeholder="Amount" [(ngModel)]="discountAmount"
+                        (ngModelChange)="discountPercent = 0">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bill-row discount" *ngIf="calculatedDiscount > 0">
+                  <span>Discount</span>
+                  <span class="discount-value">-₹{{ calculatedDiscount | number }}</span>
+                </div>
+                <div class="bill-row">
+                  <span>GST (18%)</span>
+                  <span>₹{{ taxAmount | number }}</span>
+                </div>
+                <div class="bill-row total">
+                  <span>Total Amount</span>
+                  <span>₹{{ totalAmount | number }}</span>
+                </div>
+              </div>
+
+              <!-- Payment Section -->
+              <div class="payment-section">
+                <h5>Payment</h5>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" [(ngModel)]="paymentAmount">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Mode</label>
+                    <select class="form-select" [(ngModel)]="paymentMode">
+                      <option value="Cash">Cash</option>
+                      <option value="Card">Card</option>
+                      <option value="UPI">UPI</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group" *ngIf="paymentMode !== 'Cash'">
+                  <label class="form-label">Transaction ID</label>
+                  <input type="text" class="form-input" placeholder="Enter transaction ID" [(ngModel)]="transactionId">
+                </div>
+              </div>
+
+              <!-- Balance -->
+              <div class="balance-section" [class.paid]="balanceAmount <= 0">
+                <span class="balance-label">Balance Due</span>
+                <span class="balance-value">₹{{ balanceAmount | number }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="generateInvoice()">
+          📄 Generate Invoice
+        </button>
+        <button class="btn btn-success btn-lg" (click)="processCheckout()">
+          ✓ Complete Check-Out
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
