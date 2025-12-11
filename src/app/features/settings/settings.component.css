@@ -440,3 +440,73 @@
   color: var(--text-primary);
   font-weight: 500;
 }
+
+/* Services Table */
+.services-table {
+  margin-bottom: var(--spacing-xl);
+}
+
+.service-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.service-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.service-rate {
+  font-weight: 600;
+  color: var(--accent-emerald);
+  font-size: 0.9375rem;
+}
+
+.empty-state,
+.loading-state {
+  text-align: center;
+  padding: var(--spacing-xl) !important;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Services Info */
+.services-info {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.services-info h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+}
+
+.info-icon {
+  font-size: 1.25rem;
+}
+
+.info-desc {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+/* Toggle Setting Inline (for modal) */
+.toggle-setting.inline {
+  margin-bottom: 0;
+  padding: var(--spacing-md);
+}
+

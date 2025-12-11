@@ -27,6 +27,10 @@
         <span class="nav-icon">👥</span>
         <span class="nav-label">User Management</span>
       </button>
+      <button class="nav-item" [class.active]="activeTab === 'services'" (click)="activeTab = 'services'">
+        <span class="nav-icon">🛎️</span>
+        <span class="nav-label">Add Services</span>
+      </button>
       <button class="nav-item" [class.active]="activeTab === 'backup'" (click)="activeTab = 'backup'">
         <span class="nav-icon">💾</span>
         <span class="nav-label">Backup & Data</span>
@@ -295,6 +299,78 @@
         </div>
       </div>
 
+      <!-- Add Services -->
+      <div class="settings-panel" *ngIf="activeTab === 'services'">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">🛎️ Add Services</h2>
+            <p class="panel-description">Manage hotel services and their rates</p>
+          </div>
+          <button class="btn btn-primary" (click)="openAddServiceModal()">
+            ➕ Add Service
+          </button>
+        </div>
+
+        <div class="services-table">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Service Name</th>
+                <th>Description</th>
+                <th>Rate (₹)</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let service of services">
+                <td>
+                  <span class="service-name">{{ service.serviceName }}</span>
+                </td>
+                <td>
+                  <span class="service-desc">{{ service.description || '-' }}</span>
+                </td>
+                <td>
+                  <span class="service-rate">₹{{ service.rate | number:'1.2-2' }}</span>
+                </td>
+                <td>
+                  <span class="status-badge" [class.active]="service.isActive" [class.inactive]="!service.isActive">
+                    {{ service.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn btn-sm btn-ghost" title="Edit" (click)="editService(service)">✏️</button>
+                    <button class="btn btn-sm btn-ghost" title="Toggle Status" (click)="toggleServiceStatus(service)">
+                      {{ service.isActive ? '🔒' : '🔓' }}
+                    </button>
+                    <button class="btn btn-sm btn-ghost" title="Delete" (click)="deleteService(service)">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="services.length === 0 && !serviceLoading">
+                <td colspan="5" class="empty-state">
+                  <span>No services found. Add your first service!</span>
+                </td>
+              </tr>
+              <tr *ngIf="serviceLoading">
+                <td colspan="5" class="loading-state">
+                  <span>Loading services...</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="services-info">
+          <h4>Service Types</h4>
+          <div class="info-card">
+            <span class="info-icon">🍽️</span>
+            <span class="info-desc">Room Service, Laundry, Spa, Mini Bar, Extra Bed, etc.</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Backup & Data -->
       <div class="settings-panel" *ngIf="activeTab === 'backup'">
         <div class="panel-header">
@@ -371,6 +447,49 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="showAddUserModal = false">Cancel</button>
         <button class="btn btn-primary" (click)="addUser()">Add User</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Service Modal -->
+  <div class="modal-overlay" [class.active]="showAddServiceModal" (click)="showAddServiceModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ isEditingService ? 'Edit Service' : 'Add New Service' }}</h3>
+        <button class="btn btn-icon btn-ghost" (click)="showAddServiceModal = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Service Name *</label>
+          <input type="text" class="form-input" [(ngModel)]="newService.serviceName" placeholder="Enter service name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" [(ngModel)]="newService.description" placeholder="Enter service description"
+            rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rate (₹) *</label>
+          <input type="number" class="form-input" [(ngModel)]="newService.rate" placeholder="Enter rate" min="0">
+        </div>
+        <div class="form-group">
+          <div class="toggle-setting inline">
+            <div class="toggle-info">
+              <span class="toggle-label">Active Status</span>
+              <span class="toggle-description">Service is available for selection</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="newService.isActive">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showAddServiceModal = false">Cancel</button>
+        <button class="btn btn-primary" (click)="saveService()" [disabled]="serviceLoading">
+          {{ serviceLoading ? 'Saving...' : (isEditingService ? 'Update Service' : 'Add Service') }}
+        </button>
       </div>
     </div>
   </div>

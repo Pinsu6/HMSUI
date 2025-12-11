@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AddServicesService, ServiceDto } from '../../core/services/add-services.service';
 
 interface User {
   id: number;
@@ -17,9 +18,110 @@ interface User {
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
   // Active Tab
   activeTab = 'general';
+
+  // Services
+  services: ServiceDto[] = [];
+  showAddServiceModal = false;
+  isEditingService = false;
+  serviceLoading = false;
+  newService: ServiceDto = {
+    serviceName: '',
+    description: '',
+    rate: 0,
+    isActive: true
+  };
+
+  constructor(private addServicesService: AddServicesService) { }
+
+  ngOnInit() {
+    this.loadServices();
+  }
+
+  async loadServices() {
+    try {
+      this.serviceLoading = true;
+      this.services = await this.addServicesService.getServices();
+    } catch (error) {
+      console.error('Error loading services:', error);
+    } finally {
+      this.serviceLoading = false;
+    }
+  }
+
+  openAddServiceModal() {
+    this.isEditingService = false;
+    this.newService = {
+      serviceName: '',
+      description: '',
+      rate: 0,
+      isActive: true
+    };
+    this.showAddServiceModal = true;
+  }
+
+  editService(service: ServiceDto) {
+    this.isEditingService = true;
+    this.newService = { ...service };
+    this.showAddServiceModal = true;
+  }
+
+  async saveService() {
+    if (this.newService.serviceName && this.newService.rate >= 0) {
+      try {
+        this.serviceLoading = true;
+        await this.addServicesService.insertUpdateService(this.newService);
+        this.showAddServiceModal = false;
+        this.resetServiceForm();
+        await this.loadServices();
+        alert(this.isEditingService ? 'Service updated successfully!' : 'Service added successfully!');
+      } catch (error) {
+        console.error('Error saving service:', error);
+        alert('Error saving service. Please try again.');
+      } finally {
+        this.serviceLoading = false;
+      }
+    } else {
+      alert('Please fill in all required fields.');
+    }
+  }
+
+  toggleServiceStatus(service: ServiceDto) {
+    const updatedService = { ...service, isActive: !service.isActive };
+    this.addServicesService.insertUpdateService(updatedService)
+      .then(() => {
+        service.isActive = !service.isActive;
+      })
+      .catch(error => {
+        console.error('Error toggling service status:', error);
+        alert('Error updating service status.');
+      });
+  }
+
+  resetServiceForm() {
+    this.newService = {
+      serviceName: '',
+      description: '',
+      rate: 0,
+      isActive: true
+    };
+    this.isEditingService = false;
+  }
+
+  async deleteService(service: ServiceDto) {
+    if (confirm(`Are you sure you want to delete "${service.serviceName}"?`)) {
+      try {
+        await this.addServicesService.deleteService(service.serviceId!);
+        await this.loadServices();
+        alert('Service deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting service:', error);
+        alert('Error deleting service. Please try again.');
+      }
+    }
+  }
 
   // Hotel Settings
   hotelSettings = {
