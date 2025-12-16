@@ -1,7 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AddServicesService, ServiceDto } from '../../core/services/add-services.service';
+import { RoomTypeService, RoomTypeDto } from '../../core/services/room-type.service';
+import { CurrencyService, CurrencyDto } from '../../core/services/currency.service';
+import { SettingsService, HotelSettings, TaxSettings } from '../../core/services/settings.service';
+import { HotelService, HotelInformationDto } from '../../core/services/hotel.service';
 
 interface User {
   id: number;
@@ -22,6 +26,10 @@ export class SettingsComponent implements OnInit {
   // Active Tab
   activeTab = 'general';
 
+  // Loading states
+  hotelInfoLoading = false;
+  savingHotelInfo = false;
+
   // Services
   services: ServiceDto[] = [];
   showAddServiceModal = false;
@@ -34,10 +42,83 @@ export class SettingsComponent implements OnInit {
     isActive: true
   };
 
-  constructor(private addServicesService: AddServicesService) { }
+  // Room Types
+  roomTypes: RoomTypeDto[] = [];
+  showAddRoomTypeModal = false;
+  isEditingRoomType = false;
+  roomTypeLoading = false;
+  newRoomType: RoomTypeDto = {
+    name: '',
+    baseRate: 0,
+    maxGuests: 1,
+    amenities: ''
+  };
+
+  // Currencies
+  currencies: CurrencyDto[] = [];
+  showAddCurrencyModal = false;
+  isEditingCurrency = false;
+  currencyLoading = false;
+  newCurrency: CurrencyDto = {
+    currencyCode: '',
+    currencyName: '',
+    symbol: '',
+    exchangeRate: 1,
+    isActive: true
+  };
+
+  // Hotel Settings (will be loaded from API and localStorage)
+  hotelSettings!: HotelSettings;
+  hotelInfo: HotelInformationDto = {};
+
+  // Tax Settings (will be loaded from localStorage)
+  taxSettings!: TaxSettings;
+
+  constructor(
+    private addServicesService: AddServicesService,
+    private roomTypeService: RoomTypeService,
+    private currencyService: CurrencyService,
+    private settingsService: SettingsService,
+    private hotelService: HotelService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit() {
+    this.loadSettings();
+    this.loadHotelInformation();
     this.loadServices();
+    this.loadRoomTypes();
+    this.loadCurrencies();
+  }
+
+  // Load settings from localStorage
+  loadSettings() {
+    this.hotelSettings = this.settingsService.getHotelSettings();
+    this.taxSettings = this.settingsService.getTaxSettings();
+  }
+
+  // Load Hotel Information from API
+  async loadHotelInformation() {
+    try {
+      this.hotelInfoLoading = true;
+      this.hotelInfo = await this.hotelService.getHotelInformation();
+
+      // Update hotelSettings with API data
+      if (this.hotelInfo.hotelName) {
+        this.hotelSettings.name = this.hotelInfo.hotelName;
+        this.hotelSettings.email = this.hotelInfo.email || '';
+        this.hotelSettings.phone = this.hotelInfo.phoneNumber || '';
+        this.hotelSettings.website = this.hotelInfo.website || '';
+        this.hotelSettings.address = this.hotelInfo.address || '';
+        this.hotelSettings.gstin = this.hotelInfo.gstin || '';
+      }
+    } catch (error) {
+      console.error('Error loading hotel information:', error);
+      // If API fails, use localStorage defaults
+    } finally {
+      this.hotelInfoLoading = false;
+      this.cdr.detectChanges();
+    }
   }
 
   async loadServices() {
@@ -123,29 +204,163 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  // Hotel Settings
-  hotelSettings = {
-    name: 'Grand Palace Hotel',
-    address: '123 Hotel Street, City, State - 123456',
-    phone: '+91 12345 67890',
-    email: 'info@grandpalace.com',
-    website: 'www.grandpalace.com',
-    gstin: '12ABCDE3456F7Z8',
-    checkInTime: '14:00',
-    checkOutTime: '11:00',
-    currency: 'INR',
-    timezone: 'Asia/Kolkata'
-  };
+  // Room Type Methods
+  async loadRoomTypes() {
+    try {
+      this.roomTypeLoading = true;
+      this.roomTypes = await this.roomTypeService.getRoomTypes();
+    } catch (error) {
+      console.error('Error loading room types:', error);
+    } finally {
+      this.roomTypeLoading = false;
+    }
+  }
 
-  // Tax Settings
-  taxSettings = {
-    enableGst: true,
-    cgstRate: 9,
-    sgstRate: 9,
-    igstRate: 18,
-    enableServiceCharge: false,
-    serviceChargeRate: 10
-  };
+  openAddRoomTypeModal() {
+    this.isEditingRoomType = false;
+    this.newRoomType = {
+      name: '',
+      baseRate: 0,
+      maxGuests: 1,
+      amenities: ''
+    };
+    this.showAddRoomTypeModal = true;
+  }
+
+  editRoomType(roomType: RoomTypeDto) {
+    this.isEditingRoomType = true;
+    this.newRoomType = { ...roomType };
+    this.showAddRoomTypeModal = true;
+  }
+
+  async saveRoomType() {
+    if (this.newRoomType.name && this.newRoomType.baseRate >= 0 && this.newRoomType.maxGuests > 0) {
+      try {
+        this.roomTypeLoading = true;
+        await this.roomTypeService.insertUpdateRoomType(this.newRoomType);
+        this.showAddRoomTypeModal = false;
+        this.resetRoomTypeForm();
+        await this.loadRoomTypes();
+        alert(this.isEditingRoomType ? 'Room type updated successfully!' : 'Room type added successfully!');
+      } catch (error) {
+        console.error('Error saving room type:', error);
+        alert('Error saving room type. Please try again.');
+      } finally {
+        this.roomTypeLoading = false;
+      }
+    } else {
+      alert('Please fill in all required fields.');
+    }
+  }
+
+  resetRoomTypeForm() {
+    this.newRoomType = {
+      name: '',
+      baseRate: 0,
+      maxGuests: 1,
+      amenities: ''
+    };
+    this.isEditingRoomType = false;
+  }
+
+  async deleteRoomType(roomType: RoomTypeDto) {
+    if (confirm(`Are you sure you want to delete "${roomType.name}"?`)) {
+      try {
+        await this.roomTypeService.deleteRoomType(roomType.typeId!);
+        await this.loadRoomTypes();
+        alert('Room type deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting room type:', error);
+        alert('Error deleting room type. Please try again.');
+      }
+    }
+  }
+
+  // Currency Methods
+  async loadCurrencies() {
+    try {
+      this.currencyLoading = true;
+      this.currencies = await this.currencyService.getCurrencies();
+    } catch (error) {
+      console.error('Error loading currencies:', error);
+    } finally {
+      this.currencyLoading = false;
+    }
+  }
+
+  openAddCurrencyModal() {
+    this.isEditingCurrency = false;
+    this.newCurrency = {
+      currencyCode: '',
+      currencyName: '',
+      symbol: '',
+      exchangeRate: 1,
+      isActive: true
+    };
+    this.showAddCurrencyModal = true;
+  }
+
+  editCurrency(currency: CurrencyDto) {
+    this.isEditingCurrency = true;
+    this.newCurrency = { ...currency };
+    this.showAddCurrencyModal = true;
+  }
+
+  async saveCurrency() {
+    if (this.newCurrency.currencyCode && this.newCurrency.currencyName && this.newCurrency.symbol) {
+      try {
+        this.currencyLoading = true;
+        await this.currencyService.insertUpdateCurrency(this.newCurrency);
+        this.showAddCurrencyModal = false;
+        this.resetCurrencyForm();
+        await this.loadCurrencies();
+        alert(this.isEditingCurrency ? 'Currency updated successfully!' : 'Currency added successfully!');
+      } catch (error) {
+        console.error('Error saving currency:', error);
+        alert('Error saving currency. Please try again.');
+      } finally {
+        this.currencyLoading = false;
+      }
+    } else {
+      alert('Please fill in all required fields.');
+    }
+  }
+
+  toggleCurrencyStatus(currency: CurrencyDto) {
+    const updatedCurrency = { ...currency, isActive: !currency.isActive };
+    this.currencyService.insertUpdateCurrency(updatedCurrency)
+      .then(() => {
+        currency.isActive = !currency.isActive;
+      })
+      .catch(error => {
+        console.error('Error toggling currency status:', error);
+        alert('Error updating currency status.');
+      });
+  }
+
+  resetCurrencyForm() {
+    this.newCurrency = {
+      currencyCode: '',
+      currencyName: '',
+      symbol: '',
+      exchangeRate: 1,
+      isActive: true
+    };
+    this.isEditingCurrency = false;
+  }
+
+  async deleteCurrency(currency: CurrencyDto) {
+    if (confirm(`Are you sure you want to delete "${currency.currencyName}"?`)) {
+      try {
+        await this.currencyService.deleteCurrency(currency.currencyId!);
+        await this.loadCurrencies();
+        alert('Currency deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting currency:', error);
+        alert('Error deleting currency. Please try again.');
+      }
+    }
+  }
 
   // WiFi API Settings
   wifiSettings = {
@@ -169,8 +384,32 @@ export class SettingsComponent implements OnInit {
   };
 
   // Methods
-  saveSettings() {
-    alert('Settings saved successfully!');
+  async saveSettings() {
+    try {
+      this.savingHotelInfo = true;
+
+      // Update hotel information via API
+      await this.hotelService.insertUpdateHotelInformation({
+        hotelId: this.hotelInfo.hotelId || 0,
+        hotelName: this.hotelSettings.name,
+        email: this.hotelSettings.email,
+        phoneNumber: this.hotelSettings.phone,
+        website: this.hotelSettings.website,
+        address: this.hotelSettings.address,
+        gstin: this.hotelSettings.gstin
+      });
+
+      // Save hotel and tax settings to localStorage
+      this.settingsService.saveHotelSettings(this.hotelSettings);
+      this.settingsService.saveTaxSettings(this.taxSettings);
+
+      alert('Settings saved successfully! ✓\n\nHotel information has been updated in the database.');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Error saving settings. Please try again.');
+    } finally {
+      this.savingHotelInfo = false;
+    }
   }
 
   testWifiConnection() {

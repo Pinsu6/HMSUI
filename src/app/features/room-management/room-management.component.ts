@@ -211,6 +211,10 @@ export class RoomManagementComponent implements OnInit {
     }
   }
 
+  // Edit Mode
+  isEditingRoom = false;
+  editingRoom: any = {};
+
   getStatusIcon(status: string): string {
     const icons: Record<string, string> = {
       'Vacant': '✅',
@@ -247,5 +251,81 @@ export class RoomManagementComponent implements OnInit {
 
   getRoomTypeAmenities(type: RoomType): string[] {
     return [];
+  }
+
+  enableEditMode() {
+    if (this.selectedRoom) {
+      this.isEditingRoom = true;
+      // create a copy of selectedRoom to edit
+      this.editingRoom = {
+        ...this.selectedRoom,
+        status: this.selectedRoom.status // Ensure status is copied
+      };
+    }
+  }
+
+  cancelEditMode() {
+    this.isEditingRoom = false;
+    this.editingRoom = {};
+  }
+
+  async saveRoomChanges() {
+    if (!this.editingRoom.number || !this.editingRoom.typeId) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    this.loading = true;
+    try {
+      await this.roomService.insertUpdateRoom({
+        roomId: this.editingRoom.roomId,
+        roomNumber: this.editingRoom.number,
+        roomTypeId: Number(this.editingRoom.typeId),
+        status: this.editingRoom.status,
+        price: 0,
+        description: ''
+      });
+
+      // Update the local list
+      const index = this.rooms.findIndex(r => r.roomId === this.editingRoom.roomId);
+      if (index !== -1) {
+        // Find the room type name for display
+        const roomType = this.roomTypes.find(t => t.typeId === Number(this.editingRoom.typeId));
+
+        this.rooms[index] = {
+          ...this.rooms[index],
+          number: this.editingRoom.number,
+          floor: Number(this.editingRoom.floor),
+          typeId: Number(this.editingRoom.typeId),
+          status: this.editingRoom.status,
+          roomType: roomType ? {
+            typeId: roomType.typeId,
+            name: roomType.name,
+            baseRate: roomType.baseRate,
+            maxGuests: roomType.maxGuests,
+            description: roomType.description
+          } : this.rooms[index].roomType
+        };
+
+        // Update selected room reference if modal is open
+        if (this.selectedRoom && this.selectedRoom.roomId === this.editingRoom.roomId) {
+          this.selectedRoom = { ...this.rooms[index] };
+        }
+      }
+
+      this.isEditingRoom = false;
+      this.closeModals(); // Or keep modal open and just exit edit mode? Standard is usually close or view updated.
+      // User flow: Edit -> Save -> Back to View Mode
+      // Let's go back to view mode in the modal
+      // this.isEditingRoom = false;
+
+      alert('Room updated successfully');
+    } catch (err) {
+      console.error('Failed to update room:', err);
+      alert('Failed to update room');
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
   }
 }

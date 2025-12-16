@@ -33,6 +33,8 @@ export class DashboardService {
   async getTodaysCheckIns(): Promise<Booking[]> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
     const payload = {
       page: 0,
@@ -58,31 +60,42 @@ export class DashboardService {
       const data = response.responseData ? JSON.parse(response.responseData) : response;
 
       if (Array.isArray(data)) {
-        return data.map((item: any) => ({
-          bookingId: item.BookingId,
-          guestId: item.GuestId,
-          roomId: item.RoomId,
-          checkInTime: new Date(item.CheckInTime),
-          expectedCheckOutTime: new Date(item.ExpectedCheckOutTime),
-          actualCheckOutTime: item.ActualCheckOutTime ? new Date(item.ActualCheckOutTime) : undefined,
-          adults: item.Adults,
-          children: item.Children,
-          status: item.Status,
-          totalAmount: item.TotalAmount,
-          taxAmount: item.TaxAmount,
-          guest: {
+        // Filter to only include bookings where checkInTime is TODAY
+        const todayStart = today.getTime();
+        const tomorrowStart = tomorrow.getTime();
+
+        return data
+          .filter((item: any) => {
+            const checkInDate = new Date(item.CheckInTime);
+            // checkInDate.setHours(0,0,0,0); // Optional: if we want to ignore time part comparison strictly
+            const time = checkInDate.getTime();
+            return time >= todayStart && time < tomorrowStart;
+          })
+          .map((item: any) => ({
+            bookingId: item.BookingId,
             guestId: item.GuestId,
-            fullName: item.GuestName,
-            mobile: ''
-          },
-          room: {
             roomId: item.RoomId,
-            number: item.RoomNo,
-            floor: 1,
-            typeId: 1,
-            status: 'Occupied' as const
-          }
-        }));
+            checkInTime: new Date(item.CheckInTime),
+            expectedCheckOutTime: new Date(item.ExpectedCheckOutTime),
+            actualCheckOutTime: item.ActualCheckOutTime ? new Date(item.ActualCheckOutTime) : undefined,
+            adults: item.Adults,
+            children: item.Children,
+            status: item.Status,
+            totalAmount: item.TotalAmount,
+            taxAmount: item.TaxAmount,
+            guest: {
+              guestId: item.GuestId,
+              fullName: item.GuestName,
+              mobile: ''
+            },
+            room: {
+              roomId: item.RoomId,
+              number: item.RoomNo,
+              floor: 1,
+              typeId: 1,
+              status: 'Occupied' as const
+            }
+          }));
       }
       return [];
     } catch (error) {
@@ -97,6 +110,8 @@ export class DashboardService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    // Fetch bookings with expectedCheckOutTime as today
+    // Send empty status to get both Active (pending checkout) and Completed (already checked out)
     const payload = {
       page: 0,
       pageSize: 0,
@@ -111,7 +126,7 @@ export class DashboardService {
       actualCheckOutTime: null,
       adults: 0,
       children: 0,
-      status: 'Active',
+      status: '', // Empty status to get both Active and Completed bookings
       totalAmount: 0,
       taxAmount: 0
     };
@@ -121,31 +136,43 @@ export class DashboardService {
       const data = response.responseData ? JSON.parse(response.responseData) : response;
 
       if (Array.isArray(data)) {
-        return data.map((item: any) => ({
-          bookingId: item.BookingId,
-          guestId: item.GuestId,
-          roomId: item.RoomId,
-          checkInTime: new Date(item.CheckInTime),
-          expectedCheckOutTime: new Date(item.ExpectedCheckOutTime),
-          actualCheckOutTime: item.ActualCheckOutTime ? new Date(item.ActualCheckOutTime) : undefined,
-          adults: item.Adults,
-          children: item.Children,
-          status: item.Status,
-          totalAmount: item.TotalAmount,
-          taxAmount: item.TaxAmount,
-          guest: {
+        // Filter to only include bookings where expectedCheckOutTime is TODAY
+        const todayStart = today.getTime();
+        const tomorrowStart = tomorrow.getTime();
+
+        return data
+          .filter((item: any) => {
+            const expectedCheckOut = new Date(item.ExpectedCheckOutTime);
+            expectedCheckOut.setHours(0, 0, 0, 0);
+            const checkOutTime = expectedCheckOut.getTime();
+            // Only include if expectedCheckOutTime is today
+            return checkOutTime >= todayStart && checkOutTime < tomorrowStart;
+          })
+          .map((item: any) => ({
+            bookingId: item.BookingId,
             guestId: item.GuestId,
-            fullName: item.GuestName,
-            mobile: ''
-          },
-          room: {
             roomId: item.RoomId,
-            number: item.RoomNo,
-            floor: 1,
-            typeId: 1,
-            status: 'Occupied' as const
-          }
-        }));
+            checkInTime: new Date(item.CheckInTime),
+            expectedCheckOutTime: new Date(item.ExpectedCheckOutTime),
+            actualCheckOutTime: item.ActualCheckOutTime ? new Date(item.ActualCheckOutTime) : undefined,
+            adults: item.Adults,
+            children: item.Children,
+            status: item.Status,
+            totalAmount: item.TotalAmount,
+            taxAmount: item.TaxAmount,
+            guest: {
+              guestId: item.GuestId,
+              fullName: item.GuestName,
+              mobile: ''
+            },
+            room: {
+              roomId: item.RoomId,
+              number: item.RoomNo,
+              floor: 1,
+              typeId: 1,
+              status: 'Occupied' as const
+            }
+          }));
       }
       return [];
     } catch (error) {

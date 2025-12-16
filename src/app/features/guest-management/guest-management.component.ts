@@ -73,77 +73,53 @@ export class GuestManagementComponent implements OnInit {
   async loadGuests(): Promise<void> {
     this.loading = true;
 
-    // Static mock data - no API call
-    const mockGuests: GuestDisplay[] = [
-      {
-        guestId: 1,
-        fullName: 'Rahul Sharma',
-        mobile: '9876543210',
-        email: 'rahul.sharma@email.com',
-        idType: 'Aadhar Card',
-        idNumber: '1234-5678-9012',
-        address: '123 MG Road',
-        city: 'Mumbai',
-        country: 'India',
-        totalVisits: 3,
-        lastVisit: '2025-12-06',
-        totalSpent: 15000,
-        status: 'active',
-        currentRoom: '301'
-      },
-      {
-        guestId: 2,
-        fullName: 'Priya Patel',
-        mobile: '9876543211',
-        email: 'priya.patel@email.com',
-        idType: 'Passport',
-        idNumber: 'A1234567',
-        address: '456 Park Street',
-        city: 'Delhi',
-        country: 'India',
-        totalVisits: 5,
-        lastVisit: '2025-12-05',
-        totalSpent: 35000,
-        status: 'checked-out'
-      },
-      {
-        guestId: 3,
-        fullName: 'John Smith',
-        mobile: '9876543212',
-        email: 'john.smith@email.com',
-        idType: 'Passport',
-        idNumber: 'B7654321',
-        address: '789 Broadway',
-        city: 'New York',
-        country: 'USA',
-        totalVisits: 2,
-        lastVisit: '2025-12-04',
-        totalSpent: 12000,
-        status: 'checked-out'
-      },
-      {
-        guestId: 4,
-        fullName: 'Amit Kumar',
-        mobile: '9876543213',
-        email: 'amit.kumar@email.com',
-        idType: 'Driving License',
-        idNumber: 'DL-123456',
-        address: '101 Ring Road',
-        city: 'Bangalore',
-        country: 'India',
-        totalVisits: 1,
-        lastVisit: '2025-12-08',
-        totalSpent: 5000,
-        status: 'active',
-        currentRoom: '205'
-      }
-    ];
+    try {
+      // Load guests and active bookings in parallel
+      const [guests, activeBookings] = await Promise.all([
+        this.guestService.getGuests(),
+        this.bookingService.getActiveBookings()
+      ]);
 
-    this.guests = mockGuests;
-    this.loading = false;
+      // Create a map of active bookings by guestId for faster lookup
+      const activeBookingMap = new Map<number, Booking>();
+      activeBookings.forEach(booking => {
+        activeBookingMap.set(booking.guestId, booking);
+      });
+
+      // Map guests with status and current room
+      this.guests = guests.map(guest => {
+        const activeBooking = activeBookingMap.get(guest.guestId);
+        return {
+          ...guest,
+          totalVisits: 0, // Ideally this would come from API or history count
+          lastVisit: undefined,
+          totalSpent: 0,
+          status: activeBooking ? 'active' : 'checked-out',
+          currentRoom: activeBooking?.room?.number
+        };
+      });
+
+    } catch (err) {
+      console.error('Failed to load guest data:', err);
+      // Fallback to empty list or handle error appropriately
+      this.guests = [];
+    } finally {
+      this.loading = false;
+    }
   }
 
   private setGuests(guests: Guest[]): void {
+    // This method is used when resolving data from route, 
+    // but we also need active bookings to determine status.
+    // For now, we'll re-load to ensure correct status if resolved only has basic guest data.
+    // Or we could update the resolver to fetch both. 
+    // Simpler to just map what we have and let loadGuests handle the full logic if needed,
+    // but since resolver usually just calls service.getGuests(), we might miss active status here.
+    // Let's call loadGuests() directly in ngOnInit if resolver data is insufficient, 
+    // or just update this to default to checked-out until we fetch active bookings.
+    // Ideally, we should fetch active bookings here too if we want to rely on resolver.
+
+    // For now, mapping as checked-out is safe, but we'll trigger a background refresh for status
     this.guests = guests.map(g => ({
       ...g,
       totalVisits: 0,
@@ -151,6 +127,33 @@ export class GuestManagementComponent implements OnInit {
       totalSpent: 0,
       status: 'checked-out' as const
     }));
+
+    // Refresh status in background
+    this.refreshGuestStatus();
+  }
+
+  private async refreshGuestStatus(): Promise<void> {
+    try {
+      const activeBookings = await this.bookingService.getActiveBookings();
+      const activeBookingMap = new Map<number, Booking>();
+      activeBookings.forEach(booking => {
+        activeBookingMap.set(booking.guestId, booking);
+      });
+
+      this.guests = this.guests.map(guest => {
+        const activeBooking = activeBookingMap.get(guest.guestId);
+        if (activeBooking) {
+          return {
+            ...guest,
+            status: 'active',
+            currentRoom: activeBooking.room?.number
+          };
+        }
+        return guest;
+      });
+    } catch (err) {
+      console.error('Failed to refresh guest status:', err);
+    }
   }
 
   async searchGuests(): Promise<void> {

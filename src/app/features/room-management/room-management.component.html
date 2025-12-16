@@ -225,7 +225,8 @@
         <button class="btn btn-icon btn-ghost" (click)="closeModals()">✕</button>
       </div>
       <div class="modal-body">
-        <div class="room-detail-grid">
+        <!-- View Mode -->
+        <div class="room-detail-grid" *ngIf="!isEditingRoom">
           <div class="detail-section">
             <h4>Room Information</h4>
             <div class="detail-list">
@@ -301,10 +302,50 @@
             </div>
           </div>
         </div>
+
+        <!-- Edit Mode -->
+        <div class="room-edit-form" *ngIf="isEditingRoom">
+          <div class="form-group">
+            <label class="form-label">Room Number</label>
+            <input type="text" class="form-input" [(ngModel)]="editingRoom.number">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Floor</label>
+              <select class="form-select" [(ngModel)]="editingRoom.floor">
+                <option [value]="1">Floor 1</option>
+                <option [value]="2">Floor 2</option>
+                <option [value]="3">Floor 3</option>
+                <option [value]="4">Floor 4</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Room Type</label>
+              <select class="form-select" [(ngModel)]="editingRoom.typeId">
+                <option *ngFor="let type of roomTypes" [value]="type.typeId">{{ type.name }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" [(ngModel)]="editingRoom.status">
+              <option value="Vacant">✅ Vacant</option>
+              <option value="Occupied" disabled>🔒 Occupied (Managed via Check-in)</option>
+              <option value="Dirty">🧹 Dirty</option>
+              <option value="Maintenance">🔧 Maintenance</option>
+            </select>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeModals()">Close</button>
-        <button class="btn btn-primary">Edit Room</button>
+        <ng-container *ngIf="!isEditingRoom">
+          <button class="btn btn-secondary" (click)="closeModals()">Close</button>
+          <button class="btn btn-primary" (click)="enableEditMode()">Edit Room</button>
+        </ng-container>
+        <ng-container *ngIf="isEditingRoom">
+          <button class="btn btn-secondary" (click)="cancelEditMode()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveRoomChanges()">Save Changes</button>
+        </ng-container>
       </div>
     </div>
   </div>

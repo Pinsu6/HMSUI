@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RoomService } from '../../core/services/room.service';
 import { BookingService } from '../../core/services/booking.service';
 import { GuestService } from '../../core/services/guest.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { Room, CheckInDto } from '../../core/models/models';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CheckInResolved } from '../../core/resolvers/check-in.resolver';
@@ -52,7 +53,7 @@ export class CheckInComponent implements OnInit {
     checkInDate: '',
     checkInTime: '',
     checkOutDate: '',
-    checkOutTime: '11:00',
+    checkOutTime: '11:00', // Will be loaded from settings
     adults: 1,
     children: 0,
     extraBed: false
@@ -69,6 +70,7 @@ export class CheckInComponent implements OnInit {
     private roomService: RoomService,
     private bookingService: BookingService,
     private guestService: GuestService,
+    private settingsService: SettingsService,
     private route: ActivatedRoute,
     private router: Router
   ) { }
@@ -78,6 +80,9 @@ export class CheckInComponent implements OnInit {
   selectedRoomType: string = 'All';
 
   ngOnInit() {
+    // Load default checkout time from settings
+    this.bookingDetails.checkOutTime = this.settingsService.getDefaultCheckOutTime();
+
     this.setToday();
     this.setTomorrow();
     const resolved = this.route.snapshot.data['data'] as CheckInResolved | undefined;

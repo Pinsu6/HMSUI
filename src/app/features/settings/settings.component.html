@@ -31,6 +31,14 @@
         <span class="nav-icon">🛎️</span>
         <span class="nav-label">Add Services</span>
       </button>
+      <button class="nav-item" [class.active]="activeTab === 'roomtypes'" (click)="activeTab = 'roomtypes'">
+        <span class="nav-icon">🛏️</span>
+        <span class="nav-label">Room Types</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'currency'" (click)="activeTab = 'currency'">
+        <span class="nav-icon">💰</span>
+        <span class="nav-label">Currency</span>
+      </button>
       <button class="nav-item" [class.active]="activeTab === 'backup'" (click)="activeTab = 'backup'">
         <span class="nav-icon">💾</span>
         <span class="nav-label">Backup & Data</span>
@@ -46,66 +54,74 @@
           <p class="panel-description">Basic information about your hotel</p>
         </div>
 
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">Hotel Name</label>
-            <input type="text" class="form-input" [(ngModel)]="hotelSettings.name">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-input" [(ngModel)]="hotelSettings.email">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Phone Number</label>
-            <input type="tel" class="form-input" [(ngModel)]="hotelSettings.phone">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Website</label>
-            <input type="url" class="form-input" [(ngModel)]="hotelSettings.website">
-          </div>
-          <div class="form-group full-width">
-            <label class="form-label">Address</label>
-            <textarea class="form-textarea" [(ngModel)]="hotelSettings.address"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">GSTIN</label>
-            <input type="text" class="form-input" [(ngModel)]="hotelSettings.gstin">
-          </div>
+        <div *ngIf="hotelInfoLoading" class="loading-state" style="text-align: center; padding: 20px;">
+          <span>Loading hotel information...</span>
         </div>
 
-        <div class="section-divider"></div>
+        <div *ngIf="!hotelInfoLoading">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Hotel Name</label>
+              <input type="text" class="form-input" [(ngModel)]="hotelSettings.name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" [(ngModel)]="hotelSettings.email">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-input" [(ngModel)]="hotelSettings.phone">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Website</label>
+              <input type="url" class="form-input" [(ngModel)]="hotelSettings.website">
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">Address</label>
+              <textarea class="form-textarea" [(ngModel)]="hotelSettings.address"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">GSTIN</label>
+              <input type="text" class="form-input" [(ngModel)]="hotelSettings.gstin">
+            </div>
+          </div>
 
-        <h3 class="section-title">Check-in / Check-out Times</h3>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">Default Check-in Time</label>
-            <input type="time" class="form-input" [(ngModel)]="hotelSettings.checkInTime">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Default Check-out Time</label>
-            <input type="time" class="form-input" [(ngModel)]="hotelSettings.checkOutTime">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Currency</label>
-            <select class="form-select" [(ngModel)]="hotelSettings.currency">
-              <option value="INR">INR (₹)</option>
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Timezone</label>
-            <select class="form-select" [(ngModel)]="hotelSettings.timezone">
-              <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
-              <option value="America/New_York">America/New_York (EST)</option>
-              <option value="Europe/London">Europe/London (GMT)</option>
-            </select>
-          </div>
-        </div>
+          <div class="section-divider"></div>
 
-        <div class="panel-footer">
-          <button class="btn btn-primary" (click)="saveSettings()">Save Changes</button>
+          <h3 class="section-title">Check-in / Check-out Times</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Default Check-in Time</label>
+              <input type="time" class="form-input" [(ngModel)]="hotelSettings.checkInTime">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Default Check-out Time</label>
+              <input type="time" class="form-input" [(ngModel)]="hotelSettings.checkOutTime">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Currency</label>
+              <select class="form-select" [(ngModel)]="hotelSettings.currency">
+                <option value="INR">INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Timezone</label>
+              <select class="form-select" [(ngModel)]="hotelSettings.timezone">
+                <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                <option value="America/New_York">America/New_York (EST)</option>
+                <option value="Europe/London">Europe/London (GMT)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="panel-footer">
+            <button class="btn btn-primary" (click)="saveSettings()" [disabled]="savingHotelInfo">
+              {{ savingHotelInfo ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -371,6 +387,149 @@
         </div>
       </div>
 
+      <!-- Room Types -->
+      <div class="settings-panel" *ngIf="activeTab === 'roomtypes'">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">🛏️ Room Types</h2>
+            <p class="panel-description">Manage room types and their rates</p>
+          </div>
+          <button class="btn btn-primary" (click)="openAddRoomTypeModal()">
+            ➕ Add Room Type
+          </button>
+        </div>
+
+        <div class="services-table">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Type Name</th>
+                <th>Base Rate (₹)</th>
+                <th>Max Guests</th>
+                <th>Amenities</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let roomType of roomTypes">
+                <td>
+                  <span class="service-name">{{ roomType.name }}</span>
+                </td>
+                <td>
+                  <span class="service-rate">₹{{ roomType.baseRate | number:'1.2-2' }}</span>
+                </td>
+                <td>
+                  <span>{{ roomType.maxGuests }}</span>
+                </td>
+                <td>
+                  <span class="service-desc">{{ roomType.amenities || '-' }}</span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn btn-sm btn-ghost" title="Edit" (click)="editRoomType(roomType)">✏️</button>
+                    <button class="btn btn-sm btn-ghost" title="Delete" (click)="deleteRoomType(roomType)">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="roomTypes.length === 0 && !roomTypeLoading">
+                <td colspan="5" class="empty-state">
+                  <span>No room types found. Add your first room type!</span>
+                </td>
+              </tr>
+              <tr *ngIf="roomTypeLoading">
+                <td colspan="5" class="loading-state">
+                  <span>Loading room types...</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="services-info">
+          <h4>Room Type Examples</h4>
+          <div class="info-card">
+            <span class="info-icon">🏨</span>
+            <span class="info-desc">Deluxe, Suite, Standard, Superior, Family Room, etc.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Currency -->
+      <div class="settings-panel" *ngIf="activeTab === 'currency'">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">💰 Currency Management</h2>
+            <p class="panel-description">Manage currencies and exchange rates</p>
+          </div>
+          <button class="btn btn-primary" (click)="openAddCurrencyModal()">
+            ➕ Add Currency
+          </button>
+        </div>
+
+        <div class="services-table">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Currency Code</th>
+                <th>Currency Name</th>
+                <th>Symbol</th>
+                <th>Exchange Rate</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let currency of currencies">
+                <td>
+                  <span class="service-name">{{ currency.currencyCode }}</span>
+                </td>
+                <td>
+                  <span>{{ currency.currencyName }}</span>
+                </td>
+                <td>
+                  <span class="service-rate">{{ currency.symbol }}</span>
+                </td>
+                <td>
+                  <span>{{ currency.exchangeRate | number:'1.4-4' }}</span>
+                </td>
+                <td>
+                  <span class="status-badge" [class.active]="currency.isActive" [class.inactive]="!currency.isActive">
+                    {{ currency.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn btn-sm btn-ghost" title="Edit" (click)="editCurrency(currency)">✏️</button>
+                    <button class="btn btn-sm btn-ghost" title="Toggle Status" (click)="toggleCurrencyStatus(currency)">
+                      {{ currency.isActive ? '🔒' : '🔓' }}
+                    </button>
+                    <button class="btn btn-sm btn-ghost" title="Delete" (click)="deleteCurrency(currency)">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="currencies.length === 0 && !currencyLoading">
+                <td colspan="6" class="empty-state">
+                  <span>No currencies found. Add your first currency!</span>
+                </td>
+              </tr>
+              <tr *ngIf="currencyLoading">
+                <td colspan="6" class="loading-state">
+                  <span>Loading currencies...</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="services-info">
+          <h4>Currency Examples</h4>
+          <div class="info-card">
+            <span class="info-icon">💱</span>
+            <span class="info-desc">INR (₹), USD ($), EUR (€), GBP (£), etc.</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Backup & Data -->
       <div class="settings-panel" *ngIf="activeTab === 'backup'">
         <div class="panel-header">
@@ -489,6 +648,94 @@
         <button class="btn btn-secondary" (click)="showAddServiceModal = false">Cancel</button>
         <button class="btn btn-primary" (click)="saveService()" [disabled]="serviceLoading">
           {{ serviceLoading ? 'Saving...' : (isEditingService ? 'Update Service' : 'Add Service') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Room Type Modal -->
+  <div class="modal-overlay" [class.active]="showAddRoomTypeModal" (click)="showAddRoomTypeModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ isEditingRoomType ? 'Edit Room Type' : 'Add New Room Type' }}</h3>
+        <button class="btn btn-icon btn-ghost" (click)="showAddRoomTypeModal = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Room Type Name *</label>
+          <input type="text" class="form-input" [(ngModel)]="newRoomType.name"
+            placeholder="e.g., Deluxe, Suite, Standard">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Base Rate (₹) *</label>
+          <input type="number" class="form-input" [(ngModel)]="newRoomType.baseRate" placeholder="Enter base rate"
+            min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Guests *</label>
+          <input type="number" class="form-input" [(ngModel)]="newRoomType.maxGuests" placeholder="Enter max guests"
+            min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amenities</label>
+          <textarea class="form-textarea" [(ngModel)]="newRoomType.amenities"
+            placeholder="e.g., WiFi, AC, TV, Mini Bar (comma separated)" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showAddRoomTypeModal = false">Cancel</button>
+        <button class="btn btn-primary" (click)="saveRoomType()" [disabled]="roomTypeLoading">
+          {{ roomTypeLoading ? 'Saving...' : (isEditingRoomType ? 'Update Room Type' : 'Add Room Type') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Currency Modal -->
+  <div class="modal-overlay" [class.active]="showAddCurrencyModal" (click)="showAddCurrencyModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ isEditingCurrency ? 'Edit Currency' : 'Add New Currency' }}</h3>
+        <button class="btn btn-icon btn-ghost" (click)="showAddCurrencyModal = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Currency Code *</label>
+          <input type="text" class="form-input" [(ngModel)]="newCurrency.currencyCode" placeholder="e.g., INR, USD, EUR"
+            maxlength="10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Currency Name *</label>
+          <input type="text" class="form-input" [(ngModel)]="newCurrency.currencyName"
+            placeholder="e.g., Indian Rupee, US Dollar">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Symbol *</label>
+          <input type="text" class="form-input" [(ngModel)]="newCurrency.symbol" placeholder="e.g., ₹, $, €"
+            maxlength="10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Exchange Rate</label>
+          <input type="number" class="form-input" [(ngModel)]="newCurrency.exchangeRate"
+            placeholder="Enter exchange rate" min="0" step="0.0001">
+        </div>
+        <div class="form-group">
+          <div class="toggle-setting inline">
+            <div class="toggle-info">
+              <span class="toggle-label">Active Status</span>
+              <span class="toggle-description">Currency is available for selection</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="newCurrency.isActive">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showAddCurrencyModal = false">Cancel</button>
+        <button class="btn btn-primary" (click)="saveCurrency()" [disabled]="currencyLoading">
+          {{ currencyLoading ? 'Saving...' : (isEditingCurrency ? 'Update Currency' : 'Add Currency') }}
         </button>
       </div>
     </div>
