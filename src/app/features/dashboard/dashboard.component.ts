@@ -41,6 +41,9 @@ export class DashboardComponent implements OnInit {
   // Today's Departures from API
   todayDepartures: Booking[] = [];
 
+  // This Week's Bookings
+  thisWeekBookings: Booking[] = [];
+
   // Rooms from API
   rooms: Room[] = [];
 
@@ -81,17 +84,26 @@ export class DashboardComponent implements OnInit {
 
     try {
       // Load all data in parallel
-      const [stats, checkIns, checkOuts, rooms] = await Promise.all([
+      const [stats, checkIns, checkOuts, thisWeek, rooms] = await Promise.all([
         this.dashboardService.getStats(),
         this.dashboardService.getTodaysCheckIns(),
         this.dashboardService.getTodaysCheckOuts(),
+        this.dashboardService.getThisWeeksBookings(),
         this.roomService.getRooms()
       ]);
 
       this.stats = stats;
       this.todayArrivals = checkIns;
       this.todayDepartures = checkOuts;
+      this.thisWeekBookings = thisWeek;
       this.rooms = rooms;
+
+      // Recalculate room stats client-side to assume accuracy from latest room list
+      this.stats.totalRooms = rooms.length;
+      this.stats.dirtyRooms = rooms.filter(r => r.status === 'Dirty').length;
+      this.stats.vacantRooms = rooms.filter(r => r.status === 'Vacant').length;
+      this.stats.occupiedRooms = rooms.filter(r => r.status === 'Occupied').length;
+      this.stats.maintenanceRooms = rooms.filter(r => r.status === 'Maintenance').length;
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -104,6 +116,13 @@ export class DashboardComponent implements OnInit {
     this.todayArrivals = data.checkIns;
     this.todayDepartures = data.checkOuts;
     this.rooms = data.rooms;
+    // Note: Resolver doesn't fetch thisWeekBookings yet, so we might need to fetch it separately or update resolver.
+    // For now, if resolved data exists, we'll fetch this week bookings separately in background?
+    // Or just accept it's empty until refreshing?
+    // Let's call it separately if applying resolved data.
+    this.dashboardService.getThisWeeksBookings().then(bookings => {
+      this.thisWeekBookings = bookings;
+    });
   }
 
   getRoomStatus(room: Room): string {

@@ -183,38 +183,60 @@
         </div>
       </div>
 
-      <!-- Room Status Grid -->
+      <!-- This Week's Bookings -->
       <div class="card animate-slide-up">
         <div class="card-header">
-          <h3 class="card-title">🏠 Room Status Overview</h3>
-          <a routerLink="/rooms" class="view-all">Manage Rooms →</a>
+          <h3 class="card-title">📅 This Week's Bookings</h3>
         </div>
-        <div class="room-status-legend">
-          <div class="legend-item">
-            <span class="legend-dot vacant"></span>
-            <span>Vacant</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot occupied"></span>
-            <span>Occupied</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot dirty"></span>
-            <span>Dirty</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot maintenance"></span>
-            <span>Maintenance</span>
-          </div>
-        </div>
-        <div class="room-grid">
-          <div *ngFor="let room of rooms" class="room-tile" [class]="getRoomStatus(room)">
-            <span class="room-number">{{ room.number }}</span>
-            <span class="room-type">{{ room.roomType?.name }}</span>
-            <span class="room-guest" *ngIf="getRoomGuest(room)">{{ getRoomGuest(room) }}</span>
-          </div>
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Check-In</th>
+                <th>Guest</th>
+                <th>Room</th>
+                <th>Nights</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let booking of thisWeekBookings">
+                <td>
+                  <div class="date-info">
+                    <span class="date-day">{{ booking.checkInTime | date:'dd' }}</span>
+                    <span class="date-month">{{ booking.checkInTime | date:'MMM' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="guest-info">
+                    <span class="guest-avatar">{{ booking.guest?.fullName?.charAt(0) || 'G' }}</span>
+                    <span class="guest-name">{{ booking.guest?.fullName || 'Guest' }}</span>
+                  </div>
+                </td>
+                <td><span class="room-number">{{ booking.room?.number || 'N/A' }}</span></td>
+                <td>
+                  {{ (booking.expectedCheckOutTime.getTime() - booking.checkInTime.getTime()) / (1000 * 3600 * 24) |
+                  number:'1.0-0' }}
+                </td>
+                <td>
+                  <span class="badge" [class.badge-success]="booking.status === 'Active'"
+                    [class.badge-danger]="booking.status === 'Cancelled'"
+                    [class.badge-secondary]="booking.status === 'Completed'">
+                    {{ booking.status }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="thisWeekBookings.length === 0">
+                <td colspan="5" class="text-center text-muted py-4">
+                  No bookings scheduled for this week
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
+
+
     </div>
 
     <!-- Right Column - Sidebar -->
@@ -243,6 +265,39 @@
             <span class="action-icon">🧾</span>
             <span>Generate Bill</span>
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Room Status Grid -->
+    <div class="card animate-slide-up room-status-card">
+      <div class="card-header">
+        <h3 class="card-title">🏠 Room Status Overview</h3>
+        <a routerLink="/rooms" class="view-all">Manage Rooms →</a>
+      </div>
+      <div class="room-status-legend">
+        <div class="legend-item">
+          <span class="legend-dot vacant"></span>
+          <span>Vacant</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot occupied"></span>
+          <span>Occupied</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot dirty"></span>
+          <span>Dirty</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot maintenance"></span>
+          <span>Maintenance</span>
+        </div>
+      </div>
+      <div class="room-grid">
+        <div *ngFor="let room of rooms" class="room-tile" [class]="getRoomStatus(room)">
+          <span class="room-number">{{ room.number }}</span>
+          <span class="room-type">{{ room.roomType?.name }}</span>
+          <span class="room-guest" *ngIf="getRoomGuest(room)">{{ getRoomGuest(room) }}</span>
         </div>
       </div>
     </div>

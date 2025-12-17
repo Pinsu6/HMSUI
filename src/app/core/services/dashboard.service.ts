@@ -180,4 +180,83 @@ export class DashboardService {
       return [];
     }
   }
+
+  async getThisWeeksBookings(): Promise<Booking[]> {
+    const today = new Date();
+    // Get start of week (Monday)
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    const monday = new Date(today.setDate(diff));
+    monday.setHours(0, 0, 0, 0);
+
+    // Get end of week (Sunday)
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    const payload = {
+      page: 0,
+      pageSize: 0, // Get all to filter client side
+      sortColumn: 'CheckInTime',
+      sortDirection: 'ASC',
+      searchText: '',
+      bookingId: 0,
+      guestId: 0,
+      roomId: 0,
+      checkInTime: null,
+      expectedCheckOutTime: null,
+      actualCheckOutTime: null,
+      adults: 0,
+      children: 0,
+      status: '',
+      totalAmount: 0,
+      taxAmount: 0
+    };
+
+    try {
+      const response: any = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/Booking/get`, payload));
+      const data = response.responseData ? JSON.parse(response.responseData) : response;
+
+      if (Array.isArray(data)) {
+        const weekStart = monday.getTime();
+        const weekEnd = sunday.getTime();
+
+        return data
+          .filter((item: any) => {
+            if (!item.CheckInTime) return false;
+            const checkInDate = new Date(item.CheckInTime).getTime();
+            return checkInDate >= weekStart && checkInDate <= weekEnd;
+          })
+          .map((item: any) => ({
+            bookingId: item.BookingId,
+            guestId: item.GuestId,
+            roomId: item.RoomId,
+            checkInTime: new Date(item.CheckInTime),
+            expectedCheckOutTime: new Date(item.ExpectedCheckOutTime),
+            actualCheckOutTime: item.ActualCheckOutTime ? new Date(item.ActualCheckOutTime) : undefined,
+            adults: item.Adults,
+            children: item.Children,
+            status: item.Status,
+            totalAmount: item.TotalAmount,
+            taxAmount: item.TaxAmount,
+            guest: {
+              guestId: item.GuestId,
+              fullName: item.GuestName,
+              mobile: ''
+            },
+            room: {
+              roomId: item.RoomId,
+              number: item.RoomNo,
+              floor: 1,
+              typeId: 1,
+              status: 'Occupied' as const
+            }
+          }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to fetch this week bookings:', error);
+      return [];
+    }
+  }
 }
