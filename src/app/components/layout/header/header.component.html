@@ -26,10 +26,11 @@
       <div class="dropdown notification-dropdown" [class.active]="showNotifications">
         <div class="dropdown-header">
           <span class="dropdown-title">Notifications</span>
-          <button class="clear-btn">Mark all read</button>
+          <button class="clear-btn" (click)="markAllRead()">Mark all read</button>
         </div>
         <div class="notification-list">
-          <div *ngFor="let notification of notifications" class="notification-item" [class]="notification.type">
+          <div *ngFor="let notification of notifications" class="notification-item" [class]="notification.type"
+            (click)="onNotificationClick(notification)">
             <div class="notification-content">
               <p class="notification-message">{{ notification.message }}</p>
               <span class="notification-time">{{ notification.time }}</span>
