@@ -2,6 +2,7 @@ import { ResolveFn } from '@angular/router';
 import { inject } from '@angular/core';
 import { DashboardService } from '../services/dashboard.service';
 import { RoomService } from '../services/room.service';
+import { BookingService } from '../services/booking.service';
 import { DashboardStats, Booking, Room } from '../models/models';
 
 export type DashboardResolvedData = {
@@ -9,19 +10,24 @@ export type DashboardResolvedData = {
   checkIns: Booking[];
   checkOuts: Booking[];
   rooms: Room[];
+  thisWeekBookings: Booking[];
+  activeBookings: Booking[];
 };
 
 export const dashboardResolver: ResolveFn<DashboardResolvedData> = async () => {
   const dashboardService = inject(DashboardService);
   const roomService = inject(RoomService);
+  const bookingService = inject(BookingService);
 
-  const [stats, checkIns, checkOuts, rooms] = await Promise.all([
+  const [stats, checkIns, checkOuts, rooms, thisWeekBookings, activeBookings] = await Promise.all([
     dashboardService.getStats(),
     dashboardService.getTodaysCheckIns(),
     dashboardService.getTodaysCheckOuts(),
-    roomService.getRooms()
+    roomService.getRooms(),
+    dashboardService.getThisWeeksBookings(),
+    bookingService.getActiveBookings()
   ]);
 
-  return { stats, checkIns, checkOuts, rooms };
+  return { stats, checkIns, checkOuts, rooms, thisWeekBookings, activeBookings };
 };
 

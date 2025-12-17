@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RoomService } from '../../core/services/room.service';
+import { BookingService } from '../../core/services/booking.service';
 import { DashboardStats, Booking, Room } from '../../core/models/models';
 import { DashboardResolvedData } from '../../core/resolvers/dashboard.resolver';
 
@@ -47,6 +48,9 @@ export class DashboardComponent implements OnInit {
   // Rooms from API
   rooms: Room[] = [];
 
+  // Active bookings for status calculation
+  activeBookings: Booking[] = [];
+
   // Recent Activities (keeping as static for demo)
   recentActivities = [];
 
@@ -58,6 +62,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private roomService: RoomService,
+    private bookingService: BookingService,
     private route: ActivatedRoute,
     private authService: AuthService
   ) {
@@ -84,12 +89,13 @@ export class DashboardComponent implements OnInit {
 
     try {
       // Load all data in parallel
-      const [stats, checkIns, checkOuts, thisWeek, rooms] = await Promise.all([
+      const [stats, checkIns, checkOuts, thisWeek, rooms, active] = await Promise.all([
         this.dashboardService.getStats(),
         this.dashboardService.getTodaysCheckIns(),
         this.dashboardService.getTodaysCheckOuts(),
         this.dashboardService.getThisWeeksBookings(),
-        this.roomService.getRooms()
+        this.roomService.getRooms(),
+        this.bookingService.getActiveBookings()
       ]);
 
       this.stats = stats;
@@ -97,13 +103,12 @@ export class DashboardComponent implements OnInit {
       this.todayDepartures = checkOuts;
       this.thisWeekBookings = thisWeek;
       this.rooms = rooms;
+      // Filter out any bookings that might have an actualCheckOutTime but are still returned as active
+      this.activeBookings = (active || []).filter(b => !b.actualCheckOutTime && b.status === 'Active');
 
-      // Recalculate room stats client-side to assume accuracy from latest room list
-      this.stats.totalRooms = rooms.length;
-      this.stats.dirtyRooms = rooms.filter(r => r.status === 'Dirty').length;
-      this.stats.vacantRooms = rooms.filter(r => r.status === 'Vacant').length;
-      this.stats.occupiedRooms = rooms.filter(r => r.status === 'Occupied').length;
-      this.stats.maintenanceRooms = rooms.filter(r => r.status === 'Maintenance').length;
+      // Recalculate room stats based on actual data
+      this.calculateStats();
+
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -116,18 +121,36 @@ export class DashboardComponent implements OnInit {
     this.todayArrivals = data.checkIns;
     this.todayDepartures = data.checkOuts;
     this.rooms = data.rooms;
-    // Note: Resolver doesn't fetch thisWeekBookings yet, so we might need to fetch it separately or update resolver.
-    // For now, if resolved data exists, we'll fetch this week bookings separately in background?
-    // Or just accept it's empty until refreshing?
-    // Let's call it separately if applying resolved data.
-    this.dashboardService.getThisWeeksBookings().then(bookings => {
-      this.thisWeekBookings = bookings;
-    });
+    this.thisWeekBookings = data.thisWeekBookings;
+
+    // Filter active bookings here too
+    const resolvedActive = data.activeBookings || [];
+    this.activeBookings = resolvedActive.filter(b => !b.actualCheckOutTime && b.status === 'Active');
+
+    // Recalculate room stats based on actual data
+    this.calculateStats();
+  }
+
+  calculateStats() {
+    this.stats.totalRooms = this.rooms.length;
+
+    // Calculate occupied rooms based on Active Bookings, not room status
+    // Get unique room IDs from active bookings
+    const occupiedRoomIds = new Set(this.activeBookings.map(b => b.roomId));
+    this.stats.occupiedRooms = occupiedRoomIds.size;
+
+    this.stats.dirtyRooms = this.rooms.filter(r => r.status === 'Dirty').length;
+    this.stats.maintenanceRooms = this.rooms.filter(r => r.status === 'Maintenance').length;
+
+    // Vacant = Total - Occupied - Dirty - Maintenance
+    // Ensure we don't go below zero
+    const unavailable = this.stats.occupiedRooms + this.stats.dirtyRooms + this.stats.maintenanceRooms;
+    this.stats.vacantRooms = Math.max(0, this.stats.totalRooms - unavailable);
   }
 
   getRoomStatus(room: Room): string {
     // Check if there's an active booking for this room
-    const activeBooking = this.todayArrivals.find(b => b.roomId === room.roomId && b.status === 'Active');
+    const activeBooking = this.activeBookings.find(b => b.roomId === room.roomId);
     if (activeBooking) {
       return 'occupied'; // Orange color for active bookings
     }
@@ -136,7 +159,7 @@ export class DashboardComponent implements OnInit {
 
   getRoomGuest(room: Room): string | null {
     // Find active booking for this room
-    const activeBooking = this.todayArrivals.find(b => b.roomId === room.roomId && b.status === 'Active');
+    const activeBooking = this.activeBookings.find(b => b.roomId === room.roomId);
     // Only show guest name if there's an active booking
     if (activeBooking) {
       return activeBooking.guest?.fullName || null;

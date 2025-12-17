@@ -114,9 +114,19 @@ export class RoomService {
 
     return allRooms.filter(room => {
       const status = (room.status || '').toLowerCase();
-      // Only show vacant/available rooms - exclude occupied, dirty, maintenance
-      // AND exclude rooms that have an active booking
-      return (status === 'vacant' || status === 'available') && !occupiedRoomIds.has(room.roomId);
+
+      // If the room has an active booking, it's definitely occupied
+      if (occupiedRoomIds.has(room.roomId)) {
+        return false;
+      }
+
+      // If no active booking, check if it's explicitly unavailable (Dirty/Maintenance)
+      // We allow 'Occupied' status here if there is no active booking, assuming the status is stale/out-of-sync
+      if (status === 'dirty' || status === 'maintenance') {
+        return false;
+      }
+
+      return true;
     });
   }
 

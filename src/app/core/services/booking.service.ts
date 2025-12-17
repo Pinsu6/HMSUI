@@ -13,6 +13,10 @@ export class BookingService {
   constructor(private http: HttpClient) { }
 
   async getBookings(): Promise<Booking[]> {
+    return this.getBookingsByStatus('');
+  }
+
+  async getBookingsByStatus(status: string): Promise<Booking[]> {
     const payload = {
       page: 0,
       pageSize: 0,
@@ -27,7 +31,7 @@ export class BookingService {
       actualCheckOutTime: null,
       adults: 0,
       children: 0,
-      status: '',
+      status: status,
       totalAmount: 0,
       taxAmount: 0
     };
@@ -66,8 +70,9 @@ export class BookingService {
   }
 
   async getActiveBookings(): Promise<Booking[]> {
-    const allBookings = await this.getBookings();
-    return allBookings.filter(b => b.status === 'Active');
+    const bookings = await this.getBookingsByStatus('Active');
+    // Filter out bookings that have actually checked out (ActualCheckOutTime is present)
+    return bookings.filter(b => !b.actualCheckOutTime);
   }
 
   async getBooking(id: number): Promise<Booking> {
