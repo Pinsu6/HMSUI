@@ -16,6 +16,8 @@ import { guestManagementResolver } from './core/resolvers/guest-management.resol
 import { checkInResolver } from './core/resolvers/check-in.resolver';
 import { checkOutResolver } from './core/resolvers/check-out.resolver';
 import { WiFiLogsComponent } from './features/wifi-logs/wifi-logs.component';
+import { BookingManagementComponent } from './features/booking-management/booking-management.component';
+import { BookingDetailsComponent } from './features/booking-management/booking-details/booking-details.component';
 
 export const routes: Routes = [
   // Login route - public, bina guard ke
@@ -31,6 +33,8 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent, resolve: { data: dashboardResolver } },
       { path: 'rooms', component: RoomManagementComponent, resolve: { data: roomManagementResolver } },
       { path: 'guests', component: GuestManagementComponent, resolve: { data: guestManagementResolver } },
+      { path: 'bookings', component: BookingManagementComponent },
+      { path: 'bookings/:id', component: BookingDetailsComponent },
       { path: 'check-in', component: CheckInComponent, resolve: { data: checkInResolver } },
       { path: 'check-out', component: CheckOutComponent, resolve: { data: checkOutResolver } },
       { path: 'billing', component: BillingComponent },

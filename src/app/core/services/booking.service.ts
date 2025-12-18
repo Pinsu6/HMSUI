@@ -12,17 +12,59 @@ export class BookingService {
 
   constructor(private http: HttpClient) { }
 
-  async getBookings(): Promise<Booking[]> {
-    return this.getBookingsByStatus('');
+  private mapBooking(item: any): Booking {
+    return {
+      bookingId: item.BookingId || item.bookingId,
+      guestId: item.GuestId || item.guestId,
+      roomId: item.RoomId || item.roomId,
+      checkInTime: new Date(item.CheckInTime || item.checkInTime),
+      expectedCheckOutTime: new Date(item.ExpectedCheckOutTime || item.expectedCheckOutTime),
+      actualCheckOutTime: (item.ActualCheckOutTime || item.actualCheckOutTime) ? new Date(item.ActualCheckOutTime || item.actualCheckOutTime) : undefined,
+      adults: item.Adults || item.adults,
+      children: item.Children || item.children,
+      status: item.Status || item.status,
+      totalAmount: item.TotalAmount || item.totalAmount,
+      taxAmount: item.TaxAmount || item.taxAmount,
+      guest: {
+        guestId: item.GuestId || item.guestId,
+        fullName: item.GuestName || item.FullName || item.fullName || 'Unknown',
+        mobile: item.Mobile || item.mobile || '',
+        email: item.Email || item.email || '',
+        idType: item.IdType || item.idType || '',
+        idNumber: item.IdNumber || item.idNumber || '',
+        city: item.City || item.city || '',
+        country: item.Country || item.country || ''
+      },
+      room: {
+        roomId: item.RoomId || item.roomId,
+        number: item.RoomNo || item.RoomNumber || item.roomNumber || 'N/A',
+        floor: item.FloorNo || item.floorNo || 1,
+        typeId: item.RoomTypeId || item.typeId || 1,
+        status: item.RoomStatus || item.status || 'Occupied',
+        roomType: {
+          name: item.RoomTypeName || (item.roomType && item.roomType.name) || 'Standard',
+          typeId: item.RoomTypeId || item.typeId || 1,
+          baseRate: 0,
+          maxGuests: 0
+        }
+      }
+    };
   }
 
-  async getBookingsByStatus(status: string): Promise<Booking[]> {
+  async getBookings(options: {
+    searchText?: string,
+    pageSize?: number,
+    page?: number,
+    sortColumn?: string,
+    sortDirection?: string,
+    status?: string
+  } = {}): Promise<Booking[]> {
     const payload = {
-      page: 0,
-      pageSize: 0,
-      sortColumn: '',
-      sortDirection: '',
-      searchText: '',
+      page: options.page || 0,
+      pageSize: options.pageSize || 100, // Default to 100 to avoid loading too much
+      sortColumn: options.sortColumn || 'BookingId',
+      sortDirection: options.sortDirection || 'DESC',
+      searchText: options.searchText || '',
       bookingId: 0,
       guestId: 0,
       roomId: 0,
@@ -31,52 +73,64 @@ export class BookingService {
       actualCheckOutTime: null,
       adults: 0,
       children: 0,
-      status: status,
+      status: options.status || '',
       totalAmount: 0,
       taxAmount: 0
     };
-    const response: any = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/Booking/get`, payload));
-    const data = response.responseData ? JSON.parse(response.responseData) : response;
 
-    // Map PascalCase API response to camelCase model
-    if (Array.isArray(data)) {
-      return data.map((item: any) => ({
-        bookingId: item.BookingId,
-        guestId: item.GuestId,
-        roomId: item.RoomId,
-        checkInTime: new Date(item.CheckInTime),
-        expectedCheckOutTime: new Date(item.ExpectedCheckOutTime),
-        actualCheckOutTime: item.ActualCheckOutTime ? new Date(item.ActualCheckOutTime) : undefined,
-        adults: item.Adults,
-        children: item.Children,
-        status: item.Status,
-        totalAmount: item.TotalAmount,
-        taxAmount: item.TaxAmount,
-        guest: {
-          guestId: item.GuestId,
-          fullName: item.GuestName,
-          mobile: ''
-        },
-        room: {
-          roomId: item.RoomId,
-          number: item.RoomNo,
-          floor: 1,
-          typeId: 1,
-          status: 'Occupied' as const
-        }
-      }));
+    try {
+      const response: any = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/Booking/get`, payload));
+      const data = response.responseData ? JSON.parse(response.responseData) : response;
+
+      if (Array.isArray(data)) {
+        return data.map(item => this.mapBooking(item));
+      }
+    } catch (error) {
+      console.error('Error fetching bookings', error);
     }
     return [];
   }
 
+  async getBookingsByStatus(status: string): Promise<Booking[]> {
+    return this.getBookings({ status });
+  }
+
   async getActiveBookings(): Promise<Booking[]> {
-    const bookings = await this.getBookingsByStatus('Active');
-    // Filter out bookings that have actually checked out (ActualCheckOutTime is present)
+    const bookings = await this.getBookings({ status: 'Active', pageSize: 0 }); // pageSize 0 to get all active for dashboard logic
     return bookings.filter(b => !b.actualCheckOutTime);
   }
 
-  async getBooking(id: number): Promise<Booking> {
-    return await firstValueFrom(this.http.get<Booking>(`${this.apiUrl}/bookings/${id}`));
+  async getBooking(id: number): Promise<Booking | null> {
+    const payload = {
+      page: 0,
+      pageSize: 1,
+      sortColumn: '',
+      sortDirection: '',
+      searchText: '',
+      bookingId: id,
+      guestId: 0,
+      roomId: 0,
+      checkInTime: null,
+      expectedCheckOutTime: null,
+      actualCheckOutTime: null,
+      adults: 0,
+      children: 0,
+      status: '',
+      totalAmount: 0,
+      taxAmount: 0
+    };
+
+    try {
+      const response: any = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/Booking/get`, payload));
+      const data = response.responseData ? JSON.parse(response.responseData) : response;
+
+      if (Array.isArray(data) && data.length > 0) {
+        return this.mapBooking(data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching booking by ID', error);
+    }
+    return null;
   }
 
   async checkIn(dto: CheckInDto): Promise<Booking> {

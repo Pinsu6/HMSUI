@@ -15,6 +15,7 @@ export class SidebarComponent {
     { icon: '📊', label: 'Dashboard', route: '/dashboard' },
     { icon: '🛏️', label: 'Room Management', route: '/rooms' },
     { icon: '👥', label: 'Guest Management', route: '/guests' },
+    { icon: '📅', label: 'Booking Management', route: '/bookings' },
     { icon: '📝', label: 'Check-In', route: '/check-in' },
     { icon: '🚪', label: 'Check-Out', route: '/check-out' },
     { icon: '💵', label: 'Billing & Invoice', route: '/billing' },

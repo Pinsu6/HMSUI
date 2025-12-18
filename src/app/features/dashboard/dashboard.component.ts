@@ -82,6 +82,8 @@ export class DashboardComponent implements OnInit {
     } else {
       this.loadDashboardData();
     }
+    // Load calendar data separately
+    this.loadCalendarData();
   }
 
   async loadDashboardData(): Promise<void> {
@@ -165,5 +167,91 @@ export class DashboardComponent implements OnInit {
       return activeBooking.guest?.fullName || null;
     }
     return null;
+  }
+
+  // --- Calendar Logic ---
+  calendarDate = new Date();
+  calendarDays: any[] = [];
+  allBookings: Booking[] = [];
+
+  async loadCalendarData() {
+    try {
+      // Fetch all bookings (or enough for the window) to populate calendar
+      // We reuse the generic getBookings which returns list
+      this.allBookings = await this.bookingService.getBookings();
+      this.generateCalendar();
+    } catch (error) {
+      console.error('Error loading calendar data', error);
+    }
+  }
+
+  generateCalendar() {
+    const year = this.calendarDate.getFullYear();
+    const month = this.calendarDate.getMonth();
+
+    // First day of month
+    const firstDay = new Date(year, month, 1);
+    // Last day of month
+    const lastDay = new Date(year, month + 1, 0);
+
+    // Days in month
+    const daysInMonth = lastDay.getDate();
+
+    // Day of week for first day (0-6)
+    const startingDayOfWeek = firstDay.getDay();
+
+    this.calendarDays = [];
+
+    // Previous month padding
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      this.calendarDays.push({ date: null, disabled: true });
+    }
+
+    // Days of current month
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(year, month, i);
+      const stats = this.getStatsForDate(date);
+      this.calendarDays.push({
+        date: i,
+        fullDate: date,
+        checkIns: stats.checkIns,
+        checkOuts: stats.checkOuts,
+        hasActivity: stats.checkIns > 0 || stats.checkOuts > 0,
+        isToday: this.isToday(date)
+      });
+    }
+  }
+
+  getStatsForDate(date: Date): { checkIns: number, checkOuts: number } {
+    let checkIns = 0;
+    let checkOuts = 0;
+
+    // Normalize date for comparison
+    const target = date.toDateString();
+
+    this.allBookings.forEach(b => {
+      // Check In
+      if (b.checkInTime && new Date(b.checkInTime).toDateString() === target) {
+        checkIns++;
+      }
+      // Check Out (Expected)
+      if (b.expectedCheckOutTime && new Date(b.expectedCheckOutTime).toDateString() === target) {
+        checkOuts++;
+      }
+    });
+
+    return { checkIns, checkOuts };
+  }
+
+  isToday(date: Date): boolean {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
+  }
+
+  changeMonth(offset: number) {
+    this.calendarDate = new Date(this.calendarDate.setMonth(this.calendarDate.getMonth() + offset));
+    this.generateCalendar();
   }
 }

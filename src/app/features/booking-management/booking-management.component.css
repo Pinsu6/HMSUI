@@ -1,0 +1,59 @@
+/* Specific Styles for Booking List */
+
+.search-wrapper {
+  position: relative;
+  width: 300px;
+}
+
+.search-input {
+  padding-right: 2.5rem;
+}
+
+.search-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.p-0 { padding: 0 !important; }
+.overflow-hidden { overflow: hidden; }
+
+.font-mono { font-family: monospace; }
+.whitespace-nowrap { white-space: nowrap; }
+
+.hover\:bg-gray-50:hover {
+  background-color: var(--bg-card-hover);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--bg-tertiary);
+  border-top: 3px solid var(--primary-500);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Fix table container border radius overlap */
+.table-container {
+  border: none;
+  border-radius: 0;
+}

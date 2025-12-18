@@ -1,0 +1,113 @@
+<div class="container animate-fade-in" *ngIf="booking; else loader">
+  <div class="page-header">
+    <div class="flex-col">
+      <button class="btn btn-ghost mb-md" (click)="goBack()">
+        ← Back to Bookings
+      </button>
+      <h2 class="page-title">Customer Information</h2>
+      <p class="page-subtitle">Detailed view of booking #{{ booking.bookingId }}</p>
+    </div>
+    <div class="flex gap-md">
+      <span class="badge" [ngClass]="{
+        'badge-success': booking.status === 'Active',
+        'badge-vacant': booking.status === 'Completed',
+        'badge-danger': booking.status === 'Cancelled'
+      }">{{ booking.status }}</span>
+      <!-- Placeholder for Print/Invoice -->
+      <!-- <button class="btn btn-primary">Download Invoice</button> -->
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-lg">
+    <!-- Guest Profile Card -->
+    <div class="card col-span-1">
+      <div class="card-header">
+        <h3 class="card-title">Guest Profile</h3>
+      </div>
+      <div class="flex-col items-center text-center p-4">
+        <div class="avatar-large mb-md">{{ getInitials(booking.guest?.fullName) }}</div>
+        <h3 class="text-xl font-bold text-primary mb-2">{{ booking.guest?.fullName }}</h3>
+        <p class="text-muted mb-4">{{ booking.guest?.email || 'No Email' }}</p>
+
+        <div class="info-grid w-full text-left">
+          <div class="info-item">
+            <span class="label">Phone</span>
+            <span class="value">{{ booking.guest?.mobile }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">ID Type</span>
+            <span class="value">{{ booking.guest?.idType || 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">ID Number</span>
+            <span class="value">{{ booking.guest?.idNumber || 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Address</span>
+            <span class="value">{{ booking.guest?.city || 'N/A' }}, {{ booking.guest?.country || 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Details -->
+    <div class="card col-span-2">
+      <div class="card-header">
+        <h3 class="card-title">Booking Details</h3>
+      </div>
+      <div class="grid grid-cols-2 gap-lg">
+        <div class="detail-group">
+          <label class="form-label">Check-In</label>
+          <div class="detail-value-box">
+            {{ booking.checkInTime | date:'mediumDate' }}
+            <span class="text-muted text-sm">{{ booking.checkInTime | date:'shortTime' }}</span>
+          </div>
+        </div>
+        <div class="detail-group">
+          <label class="form-label">Expected Check-Out</label>
+          <div class="detail-value-box">
+            {{ booking.expectedCheckOutTime | date:'mediumDate' }}
+            <span class="text-muted text-sm">{{ booking.expectedCheckOutTime | date:'shortTime' }}</span>
+          </div>
+        </div>
+        <div class="detail-group">
+          <label class="form-label">Room</label>
+          <div class="detail-value-box highlight">
+            Room {{ booking.room?.number }}
+            <span class="badge badge-primary scale-75 ml-2">{{ booking.room?.roomType?.name || 'Standard' }}</span>
+          </div>
+        </div>
+        <div class="detail-group">
+          <label class="form-label">Guests</label>
+          <div class="detail-value-box">
+            {{ booking.adults }} Adults, {{ booking.children }} Children
+          </div>
+        </div>
+      </div>
+
+      <div class="divider my-lg"></div>
+
+      <div class="financial-summary">
+        <h4 class="text-lg font-semibold mb-md">Payment Information</h4>
+        <div class="payment-row">
+          <span>Room Charges</span>
+          <span>₹{{ (booking.totalAmount - booking.taxAmount) | number:'1.2-2' }}</span>
+        </div>
+        <div class="payment-row">
+          <span>Taxes & Fees</span>
+          <span>₹{{ booking.taxAmount | number:'1.2-2' }}</span>
+        </div>
+        <div class="payment-row total">
+          <span>Total Amount</span>
+          <span class="amount-total">₹{{ booking.totalAmount | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loader>
+  <div class="flex-center h-screen">
+    <div class="spinner"></div>
+  </div>
+</ng-template>

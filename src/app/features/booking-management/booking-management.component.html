@@ -1,0 +1,93 @@
+<div class="container animate-fade-in">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="flex-col">
+      <h2 class="page-title">Booking Management</h2>
+      <p class="page-subtitle">Manage customer bookings and view details</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-wrapper">
+      <input type="text" class="form-input search-input" [(ngModel)]="searchTerm" (input)="filterBookings()"
+        placeholder="Search guests, rooms, IDs...">
+      <span class="search-icon">🔍</span>
+    </div>
+  </div>
+
+  <!-- Bookings Table -->
+  <div class="card p-0 overflow-hidden" *ngIf="!loading; else loader">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Guest</th>
+            <th>Room</th>
+            <th>Check-In</th>
+            <th>Check-Out</th>
+            <th>Status</th>
+            <th>Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let booking of filteredBookings" class="hover:bg-gray-50 transition-colors">
+            <td class="font-mono text-muted">#{{ booking.bookingId }}</td>
+            <td>
+              <div class="flex items-center gap-md cursor-pointer group" (click)="viewCustomerInfo(booking)">
+                <div class="avatar-sm">{{ booking.guest?.fullName?.charAt(0) || 'G' }}</div>
+                <div class="flex-col">
+                  <span class="font-medium text-primary group-hover:text-accent transition-colors">
+                    {{ booking.guest?.fullName || 'Unknown' }}
+                  </span>
+                  <span class="text-xs text-muted">{{ booking.guest?.mobile }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="font-bold text-primary">{{ booking.room?.number || 'N/A' }}</span>
+            </td>
+            <td class="whitespace-nowrap">
+              <div class="flex-col">
+                <span class="text-sm text-primary">{{ booking.checkInTime | date:'mediumDate' }}</span>
+                <span class="text-xs text-muted">{{ booking.checkInTime | date:'shortTime' }}</span>
+              </div>
+            </td>
+            <td class="whitespace-nowrap">
+              <div class="flex-col">
+                <span class="text-sm text-primary">{{ booking.expectedCheckOutTime | date:'mediumDate' }}</span>
+                <span class="text-xs text-muted">{{ booking.expectedCheckOutTime | date:'shortTime' }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-success': booking.status === 'Active',
+                'badge-vacant': booking.status === 'Completed',
+                'badge-danger': booking.status === 'Cancelled'
+              }">
+                {{ booking.status }}
+              </span>
+            </td>
+            <td class="font-mono font-medium">₹{{ booking.totalAmount | number:'1.2-2' }}</td>
+            <td>
+              <button class="btn btn-sm btn-secondary" (click)="viewCustomerInfo(booking)">
+                View Details
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredBookings.length === 0">
+            <td colspan="8" class="text-center py-xl text-muted">
+              No bookings found matching your search.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <ng-template #loader>
+    <div class="flex-center h-64">
+      <div class="spinner"></div>
+    </div>
+  </ng-template>
+</div>

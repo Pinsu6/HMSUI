@@ -267,6 +267,48 @@
           </button>
         </div>
       </div>
+
+      <!-- Booking Calendar -->
+      <div class="card calendar-card animate-slide-up">
+        <div class="calendar-header">
+          <button class="cal-nav-btn" (click)="changeMonth(-1)">◀</button>
+          <span class="cal-month">{{ calendarDate | date:'MMMM yyyy' }}</span>
+          <button class="cal-nav-btn" (click)="changeMonth(1)">▶</button>
+        </div>
+        <div class="calendar-grid">
+          <div class="cal-day-header">S</div>
+          <div class="cal-day-header">M</div>
+          <div class="cal-day-header">T</div>
+          <div class="cal-day-header">W</div>
+          <div class="cal-day-header">T</div>
+          <div class="cal-day-header">F</div>
+          <div class="cal-day-header">S</div>
+
+          <div *ngFor="let day of calendarDays" class="cal-day" [class.empty]="!day.date"
+            [class.has-activity]="day.checkIns > 0 || day.checkOuts > 0" [class.today]="day.isToday"
+            [title]="day.fullDate ? (day.checkIns + ' Check-ins, ' + day.checkOuts + ' Check-outs') : ''">
+            <span *ngIf="day.date">{{ day.date }}</span>
+            <div *ngIf="day.checkIns > 0 || day.checkOuts > 0" class="cal-dots">
+              <span *ngIf="day.checkIns > 0" class="dot dot-in"></span>
+              <span *ngIf="day.checkOuts > 0" class="dot dot-out"></span>
+            </div>
+
+            <!-- Hover Tooltip -->
+            <div class="cal-tooltip" *ngIf="day.date && (day.checkIns > 0 || day.checkOuts > 0)">
+              <div class="tooltip-row">
+                <span class="dot dot-in"></span> {{ day.checkIns }} In
+              </div>
+              <div class="tooltip-row">
+                <span class="dot dot-out"></span> {{ day.checkOuts }} Out
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="calendar-legend">
+          <div class="legend-item"><span class="dot dot-in"></span> Check-In</div>
+          <div class="legend-item"><span class="dot dot-out"></span> Check-Out</div>
+        </div>
+      </div>
     </div>
 
     <!-- Room Status Grid -->
