@@ -148,11 +148,19 @@ export class RoomManagementComponent implements OnInit {
     if (room.status === 'Dirty') {
       try {
         await this.roomService.markClean(room.roomId);
-        // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
-        setTimeout(() => {
+
+        // Fetch updated room status to ensure correctness (e.g. might be Occupied if guest is in house)
+        const updatedRoom = await this.roomService.getRoomById(room.roomId);
+
+        if (updatedRoom) {
+          // Update local state with fresh data
+          room.status = updatedRoom.status;
+          this.cdr.detectChanges();
+        } else {
+          // Fallback if fetch fails, though risky
           room.status = 'Vacant';
           this.cdr.detectChanges();
-        }, 0);
+        }
       } catch (err) {
         console.error('Failed to mark room as clean:', err);
         alert('Failed to mark room as clean. Please try again.');

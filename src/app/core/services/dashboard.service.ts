@@ -110,8 +110,9 @@ export class DashboardService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Fetch bookings with expectedCheckOutTime as today
-    // Send empty status to get both Active (pending checkout) and Completed (already checked out)
+    // Fetch bookings to filter client side for better accuracy on "Active today" vs "Departed today"
+    // We remove expectedCheckOutTime filter from server to get a broader range, 
+    // ensuring we catch early checkouts that happened today.
     const payload = {
       page: 0,
       pageSize: 0,
@@ -122,7 +123,7 @@ export class DashboardService {
       guestId: 0,
       roomId: 0,
       checkInTime: null,
-      expectedCheckOutTime: today.toISOString(),
+      expectedCheckOutTime: null,
       actualCheckOutTime: null,
       adults: 0,
       children: 0,
@@ -136,17 +137,22 @@ export class DashboardService {
       const data = response.responseData ? JSON.parse(response.responseData) : response;
 
       if (Array.isArray(data)) {
-        // Filter to only include bookings where expectedCheckOutTime is TODAY
         const todayStart = today.getTime();
         const tomorrowStart = tomorrow.getTime();
 
         return data
           .filter((item: any) => {
-            const expectedCheckOut = new Date(item.ExpectedCheckOutTime);
-            expectedCheckOut.setHours(0, 0, 0, 0);
-            const checkOutTime = expectedCheckOut.getTime();
-            // Only include if expectedCheckOutTime is today
-            return checkOutTime >= todayStart && checkOutTime < tomorrowStart;
+            const expectedCheckOut = item.ExpectedCheckOutTime ? new Date(item.ExpectedCheckOutTime).getTime() : 0;
+            const actualCheckOut = item.ActualCheckOutTime ? new Date(item.ActualCheckOutTime).getTime() : 0;
+
+            // 1. Actually Checked Out TODAY
+            const checkedOutToday = actualCheckOut >= todayStart && actualCheckOut < tomorrowStart;
+
+            // 2. Expected to Check Out TODAY (and hasn't checked out yet)
+            // We check !ActualCheckOutTime to ensure we don't double count or show "Expected Today" if they left "Yesterday" (which shouldn't happen but good to be safe)
+            const expectedTodayAndActive = !item.ActualCheckOutTime && (expectedCheckOut >= todayStart && expectedCheckOut < tomorrowStart);
+
+            return checkedOutToday || expectedTodayAndActive;
           })
           .map((item: any) => ({
             bookingId: item.BookingId,

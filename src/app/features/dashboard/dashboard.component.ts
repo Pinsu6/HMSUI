@@ -1,4 +1,4 @@
-import { Component, OnInit, effect } from '@angular/core';
+import { Component, OnInit, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
@@ -64,7 +64,8 @@ export class DashboardComponent implements OnInit {
     private roomService: RoomService,
     private bookingService: BookingService,
     private route: ActivatedRoute,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef, // Added CDR
   ) {
     effect(() => {
       const user = this.authService.currentUser();
@@ -180,6 +181,7 @@ export class DashboardComponent implements OnInit {
       // We reuse the generic getBookings which returns list
       this.allBookings = await this.bookingService.getBookings();
       this.generateCalendar();
+      this.cdr.detectChanges(); // Force update to prevent NG0100
     } catch (error) {
       console.error('Error loading calendar data', error);
     }
@@ -234,9 +236,17 @@ export class DashboardComponent implements OnInit {
       if (b.checkInTime && new Date(b.checkInTime).toDateString() === target) {
         checkIns++;
       }
-      // Check Out (Expected)
-      if (b.expectedCheckOutTime && new Date(b.expectedCheckOutTime).toDateString() === target) {
-        checkOuts++;
+
+      // Check Out Logic
+      // If actual checkout exists, use that. Otherwise use expected.
+      if (b.actualCheckOutTime) {
+        if (new Date(b.actualCheckOutTime).toDateString() === target) {
+          checkOuts++;
+        }
+      } else if (b.expectedCheckOutTime) {
+        if (new Date(b.expectedCheckOutTime).toDateString() === target) {
+          checkOuts++;
+        }
       }
     });
 

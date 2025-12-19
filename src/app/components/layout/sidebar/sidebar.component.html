@@ -8,16 +8,25 @@
   <!-- Navigation Menu -->
   <nav class="sidebar-nav">
     <ul class="nav-list">
-      <li *ngFor="let item of menuItems" class="nav-item">
-        <a 
-          [routerLink]="item.route" 
-          routerLinkActive="active" 
-          class="nav-link"
-          [title]="isCollapsed ? item.label : ''"
-        >
+      <li *ngFor="let item of menuItems" class="nav-item" [class.has-submenu]="item.children">
+        <a [routerLink]="item.route" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+          class="nav-link" [title]="isCollapsed ? item.label : ''" (click)="toggleSubmenu(item)">
           <span class="nav-icon">{{ item.icon }}</span>
           <span class="nav-label" *ngIf="!isCollapsed">{{ item.label }}</span>
+          <span class="submenu-arrow" *ngIf="item.children && !isCollapsed">
+            {{ item.expanded ? '▼' : '▶' }}
+          </span>
         </a>
+
+        <!-- Submenu -->
+        <ul class="submenu" *ngIf="item.children && !isCollapsed && item.expanded">
+          <li *ngFor="let subItem of item.children" class="nav-item sub-nav-item">
+            <a [routerLink]="subItem.route" routerLinkActive="active" class="nav-link sub-nav-link">
+              <span class="dot">•</span>
+              <span class="nav-label">{{ subItem.label }}</span>
+            </a>
+          </li>
+        </ul>
       </li>
     </ul>
   </nav>

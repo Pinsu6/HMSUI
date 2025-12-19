@@ -1,0 +1,249 @@
+.template-container {
+  padding: 2rem;
+  height: 100%;
+  overflow-y: auto;
+  background-color: var(--bg-secondary);
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header-content h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.header-content p {
+  color: var(--text-secondary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--primary-600);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-700);
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+.btn-outline:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Invoice Paper */
+.invoice-paper {
+  background: white;
+  width: 210mm; /* A4 Width */
+  min-height: 297mm; /* A4 Height */
+  margin: 0 auto;
+  padding: 20mm;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  color: #333;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+}
+
+.inv-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.inv-logo .placeholder-logo {
+  width: 150px;
+  height: 80px;
+  background: #f3f4f6;
+  border: 2px dashed #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.inv-company-info {
+  text-align: right;
+}
+
+.inv-company-info h2 {
+  color: var(--primary-600);
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.inv-company-info p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.inv-divider {
+  height: 2px;
+  background: var(--primary-100);
+  margin: 1rem 0 2rem;
+}
+
+.inv-details-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+}
+
+.inv-bill-to h3 {
+  color: var(--primary-600);
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.inv-bill-to p {
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+}
+
+.inv-meta {
+  min-width: 250px;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.meta-row .label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.meta-row .value {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Table */
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 3rem;
+}
+
+.inv-table th {
+  background: #f8fafc;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #4b5563;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.inv-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #1f2937;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* Footer & Totals */
+.inv-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.inv-notes {
+  flex: 1;
+  padding-right: 4rem;
+}
+
+.inv-notes h4 {
+  color: #4b5563;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.inv-notes p {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0.25rem 0;
+}
+
+.inv-totals {
+  min-width: 300px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.total-row span:last-child {
+  font-weight: 600;
+}
+
+.grand-total {
+  border-top: 2px solid var(--primary-600);
+  border-bottom: none;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  font-size: 1.25rem;
+  color: var(--primary-700);
+}
+
+/* Signatures */
+.inv-signatures {
+  margin-top: 5rem;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2rem;
+}
+
+.sig-box {
+  text-align: center;
+  width: 200px;
+}
+
+.sig-line {
+  border-bottom: 1px solid #d1d5db;
+  margin-bottom: 0.5rem;
+}
+
+.sig-box p {
+  font-size: 0.9rem;
+  color: #6b7280;
+}

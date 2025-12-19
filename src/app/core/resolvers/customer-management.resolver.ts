@@ -3,11 +3,11 @@ import { inject } from '@angular/core';
 import { GuestService } from '../services/guest.service';
 import { Guest } from '../models/models';
 
-export type GuestManagementResolved = {
+export type CustomerManagementResolved = {
   guests: Guest[];
 };
 
-export const guestManagementResolver: ResolveFn<GuestManagementResolved> = async () => {
+export const customerManagementResolver: ResolveFn<CustomerManagementResolved> = async () => {
   const guestService = inject(GuestService);
   const guests = await guestService.getGuests();
   return { guests };

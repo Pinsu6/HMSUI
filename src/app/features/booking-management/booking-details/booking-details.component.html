@@ -97,7 +97,32 @@
           <span>Taxes & Fees</span>
           <span>₹{{ booking.taxAmount | number:'1.2-2' }}</span>
         </div>
-        <div class="payment-row total">
+
+        <!-- Charges Section -->
+        <div class="charges-section my-md">
+          <div class="flex justify-between items-center mb-sm">
+            <h5 class="text-md font-semibold text-muted">Additional Charges</h5>
+            <button class="btn btn-sm btn-outline" (click)="openAddChargeModal()">+ Add Charge</button>
+          </div>
+
+          <div class="charges-list" *ngIf="charges.length > 0; else noCharges">
+            <div class="payment-row text-sm" *ngFor="let charge of charges">
+              <span>{{ charge.description }} <span class="text-xs text-muted">({{ charge.category }})</span></span>
+              <span>₹{{ charge.amount | number:'1.2-2' }}</span>
+            </div>
+            <div class="divider my-xs"></div>
+            <div class="payment-row font-medium">
+              <span>Total Additional Charges</span>
+              <span>₹{{ totalCharges | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <ng-template #noCharges>
+            <p class="text-sm text-muted italic">No additional charges added.</p>
+          </ng-template>
+        </div>
+
+        <div class="payment-row total border-t pt-md mt-md">
           <span>Total Amount</span>
           <span class="amount-total">₹{{ booking.totalAmount | number:'1.2-2' }}</span>
         </div>
@@ -105,6 +130,57 @@
     </div>
   </div>
 </div>
+
+<!-- Add Charge Modal -->
+<div class="modal-overlay" *ngIf="showAddChargeModal" (click)="showAddChargeModal = false">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Service Charge</h3>
+      <button class="btn btn-icon btn-ghost" (click)="showAddChargeModal = false">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Predefined Services -->
+      <div class="form-group">
+        <label class="form-label">Select Service (Optional)</label>
+        <select class="form-select" (change)="onServiceSelect($event)">
+          <option value="">-- Custom Charge --</option>
+          <option *ngFor="let s of predefinedServices" [value]="s.name">{{ s.name }} (₹{{ s.price }})</option>
+        </select>
+      </div>
+
+      <div class="divider my-sm"></div>
+
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <input type="text" class="form-input" placeholder="e.g. Laundry, Room Service"
+          [(ngModel)]="newCharge.description">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (₹) *</label>
+        <input type="number" class="form-input" placeholder="0.00" [(ngModel)]="newCharge.amount">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-select" [(ngModel)]="newCharge.category">
+          <option value="Service">General Service</option>
+          <option value="Food & Beverage">Food & Beverage</option>
+          <option value="Laundry">Laundry</option>
+          <option value="Damage">Damage/Penalty</option>
+          <option value="Transportation">Transportation</option>
+          <option value="Spa & Wellness">Spa & Wellness</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="showAddChargeModal = false">Cancel</button>
+      <button class="btn btn-primary" (click)="saveCharge()"
+        [disabled]="!newCharge.description || !newCharge.amount">Add Charge</button>
+    </div>
+  </div>
+</div>
+
+
 
 <ng-template #loader>
   <div class="flex-center h-screen">

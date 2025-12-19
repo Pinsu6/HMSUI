@@ -14,11 +14,22 @@ export class BillingService {
 
   // Charges
   async getChargesByBooking(bookingId: number): Promise<Charge[]> {
-    return await firstValueFrom(this.http.get<Charge[]>(`${this.apiUrl}/charges/booking/${bookingId}`));
+    try {
+      const response: any = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/Charge/Get`, { bookingId }));
+      const data = response.responseData ? JSON.parse(response.responseData) : response;
+      return Array.isArray(data) ? data : [];
+    } catch (error: any) {
+      if (error.status === 404) {
+        return [];
+      }
+      return [];
+    }
   }
 
   async addCharge(charge: Partial<Charge>): Promise<Charge> {
-    return await firstValueFrom(this.http.post<Charge>(`${this.apiUrl}/charges`, charge));
+    // Assuming InsertUpdate pattern too given "hum post use karte hai"
+    const response: any = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/Charge/InsertUpdate`, charge));
+    return response.responseData ? JSON.parse(response.responseData) : response;
   }
 
   async deleteCharge(id: number): Promise<void> {

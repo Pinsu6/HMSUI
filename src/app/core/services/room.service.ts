@@ -103,6 +103,49 @@ export class RoomService {
     return [];
   }
 
+  async getRoomById(roomId: number): Promise<Room | null> {
+    const payload = {
+      page: 0,
+      pageSize: 0,
+      sortColumn: '',
+      sortDirection: '',
+      searchText: '',
+      roomId: roomId,
+      roomNumber: '',
+      roomTypeId: 0,
+      price: 0,
+      status: '',
+      description: ''
+    };
+
+    try {
+      const response: any = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/Room/get`, payload));
+      const data = response.responseData ? JSON.parse(response.responseData) : response;
+
+      if (Array.isArray(data) && data.length > 0) {
+        const item = data[0];
+        return {
+          roomId: item.RoomId,
+          number: item.Number,
+          floor: item.Floor || 1,
+          typeId: item.TypeId,
+          status: item.Status,
+          roomType: {
+            typeId: item.TypeId,
+            name: item.RoomTypeName,
+            baseRate: item.BaseRate,
+            maxGuests: item.MaxGuests,
+            description: item.Amenities || ''
+          }
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error(`Failed to fetch room ${roomId}:`, error);
+      return null;
+    }
+  }
+
   async getAvailableRooms(): Promise<Room[]> {
     // Get rooms and active bookings in parallel
     const [allRooms, activeBookings] = await Promise.all([
