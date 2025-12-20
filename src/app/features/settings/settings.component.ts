@@ -19,6 +19,7 @@ interface User {
 
 @Component({
   selector: 'app-settings',
+  standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
@@ -174,16 +175,38 @@ export class SettingsComponent implements OnInit {
     if (this.newService.serviceName && this.newService.rate >= 0) {
       try {
         this.serviceLoading = true;
+        this.cdr.markForCheck();
+
         await this.addServicesService.insertUpdateService(this.newService);
-        this.showAddServiceModal = false;
-        this.resetServiceForm();
-        await this.loadServices();
-        alert(this.isEditingService ? 'Service updated successfully!' : 'Service added successfully!');
+
+        const alertMsg = this.isEditingService ? 'Service updated successfully!' : 'Service added successfully!';
+
+        // Use a single macrotask to handle all state updates and refreshes
+        setTimeout(async () => {
+          // 1. Fetch new data first
+          await this.loadServices();
+
+          // 2. Clear form and close modal
+          this.showAddServiceModal = false;
+          this.serviceLoading = false;
+          this.resetServiceForm();
+          this.activeTab = 'services';
+
+          // 3. Force Angular to update the DOM with the new services array
+          this.cdr.detectChanges();
+
+          // 4. Navigate if needed
+          this.router.navigate(['/settings', 'services']);
+
+          // 5. Show notification after UI has updated
+          setTimeout(() => alert(alertMsg), 100);
+        }, 0);
+
       } catch (error) {
         console.error('Error saving service:', error);
-        alert('Error saving service. Please try again.');
-      } finally {
         this.serviceLoading = false;
+        this.cdr.detectChanges();
+        alert('Error saving service. Please try again.');
       }
     } else {
       alert('Please fill in all required fields.');
@@ -258,16 +281,38 @@ export class SettingsComponent implements OnInit {
     if (this.newRoomType.name && this.newRoomType.baseRate >= 0 && this.newRoomType.maxGuests > 0) {
       try {
         this.roomTypeLoading = true;
+        this.cdr.markForCheck();
+
         await this.roomTypeService.insertUpdateRoomType(this.newRoomType);
-        this.showAddRoomTypeModal = false;
-        this.resetRoomTypeForm();
-        await this.loadRoomTypes();
-        alert(this.isEditingRoomType ? 'Room type updated successfully!' : 'Room type added successfully!');
+
+        const alertMsg = this.isEditingRoomType ? 'Room type updated successfully!' : 'Room type added successfully!';
+
+        // Match the Services logic for reliable modal closing and list refresh
+        setTimeout(async () => {
+          // 1. Fetch new data first
+          await this.loadRoomTypes();
+
+          // 2. Clear form and close modal
+          this.showAddRoomTypeModal = false;
+          this.roomTypeLoading = false;
+          this.resetRoomTypeForm();
+          this.activeTab = 'roomtypes';
+
+          // 3. Force Angular to update the DOM
+          this.cdr.detectChanges();
+
+          // 4. Navigate to ensure tab is active
+          this.router.navigate(['/settings', 'roomtypes']);
+
+          // 5. Success notification
+          setTimeout(() => alert(alertMsg), 100);
+        }, 0);
+
       } catch (error) {
         console.error('Error saving room type:', error);
-        alert('Error saving room type. Please try again.');
-      } finally {
         this.roomTypeLoading = false;
+        this.cdr.detectChanges();
+        alert('Error saving room type. Please try again.');
       }
     } else {
       alert('Please fill in all required fields.');
@@ -331,16 +376,37 @@ export class SettingsComponent implements OnInit {
     if (this.newCurrency.currencyCode && this.newCurrency.currencyName && this.newCurrency.symbol) {
       try {
         this.currencyLoading = true;
+        this.cdr.markForCheck();
+
         await this.currencyService.insertUpdateCurrency(this.newCurrency);
-        this.showAddCurrencyModal = false;
-        this.resetCurrencyForm();
-        await this.loadCurrencies();
-        alert(this.isEditingCurrency ? 'Currency updated successfully!' : 'Currency added successfully!');
+
+        const alertMsg = this.isEditingCurrency ? 'Currency updated successfully!' : 'Currency added successfully!';
+
+        setTimeout(async () => {
+          // 1. Fetch new data first
+          await this.loadCurrencies();
+
+          // 2. Clear form and close modal
+          this.showAddCurrencyModal = false;
+          this.currencyLoading = false;
+          this.resetCurrencyForm();
+          this.activeTab = 'currency';
+
+          // 3. Force Angular to update the DOM
+          this.cdr.detectChanges();
+
+          // 4. Navigate to ensure tab is active
+          this.router.navigate(['/settings', 'currency']);
+
+          // 5. Success notification
+          setTimeout(() => alert(alertMsg), 100);
+        }, 0);
+
       } catch (error) {
         console.error('Error saving currency:', error);
-        alert('Error saving currency. Please try again.');
-      } finally {
         this.currencyLoading = false;
+        this.cdr.detectChanges();
+        alert('Error saving currency. Please try again.');
       }
     } else {
       alert('Please fill in all required fields.');
