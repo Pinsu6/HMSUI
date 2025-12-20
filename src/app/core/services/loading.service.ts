@@ -9,13 +9,17 @@ export class LoadingService {
 
   startRequest(): void {
     this.activeRequests += 1;
-    this.isLoading.set(true);
+    setTimeout(() => {
+      this.isLoading.set(true);
+    });
   }
 
   endRequest(): void {
     this.activeRequests = Math.max(this.activeRequests - 1, 0);
     if (this.activeRequests === 0) {
-      this.isLoading.set(false);
+      setTimeout(() => {
+        this.isLoading.set(false);
+      });
     }
   }
 }

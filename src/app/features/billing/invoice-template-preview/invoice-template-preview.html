@@ -18,10 +18,11 @@
     <!-- Invoice Header -->
     <div class="inv-header">
       <div class="inv-logo">
-        <div class="placeholder-logo">HOTEL LOGO</div>
+        <img src="https://booking.dorwaila.com/wp-content/plugins/vikbooking/admin/resources/head1-old.png"
+          alt="Dorwaila Logo" style="max-height: 80px; width: auto;">
       </div>
       <div class="inv-company-info">
-        <h2>Grand Hotel & Resort</h2>
+        <h2>Dorwaila</h2>
         <p>123 Luxury Avenue, Paradise City</p>
         <p>Phone: +1 234 567 8900</p>
         <p>Email: contact@grandhotel.com</p>
@@ -76,22 +77,22 @@
           <td>1</td>
           <td>Room Charge (Deluxe Suite)</td>
           <td class="text-right">4</td>
-          <td class="text-right">5,000.00</td>
-          <td class="text-right">20,000.00</td>
+          <td class="text-right">{{ settingsService.getCurrencySymbol() }} 5,000.00</td>
+          <td class="text-right">{{ settingsService.getCurrencySymbol() }} 20,000.00</td>
         </tr>
         <tr>
           <td>2</td>
           <td>Room Service - Dinner</td>
           <td class="text-right">1</td>
-          <td class="text-right">1,200.00</td>
-          <td class="text-right">1,200.00</td>
+          <td class="text-right">{{ settingsService.getCurrencySymbol() }} 1,200.00</td>
+          <td class="text-right">{{ settingsService.getCurrencySymbol() }} 1,200.00</td>
         </tr>
         <tr>
           <td>3</td>
           <td>Laundry Service</td>
           <td class="text-right">2</td>
-          <td class="text-right">250.00</td>
-          <td class="text-right">500.00</td>
+          <td class="text-right">{{ settingsService.getCurrencySymbol() }} 250.00</td>
+          <td class="text-right">{{ settingsService.getCurrencySymbol() }} 500.00</td>
         </tr>
       </tbody>
     </table>
@@ -107,19 +108,19 @@
       <div class="inv-totals">
         <div class="total-row">
           <span>Sub Total:</span>
-          <span>21,700.00</span>
+          <span>{{ settingsService.getCurrencySymbol() }} 21,700.00</span>
         </div>
         <div class="total-row">
           <span>SGST (9%):</span>
-          <span>1,953.00</span>
+          <span>{{ settingsService.getCurrencySymbol() }} 1,953.00</span>
         </div>
         <div class="total-row">
           <span>CGST (9%):</span>
-          <span>1,953.00</span>
+          <span>{{ settingsService.getCurrencySymbol() }} 1,953.00</span>
         </div>
         <div class="total-row grand-total">
           <span>Grand Total:</span>
-          <span>₹ 25,606.00</span>
+          <span>{{ settingsService.getCurrencySymbol() }} 25,606.00</span>
         </div>
       </div>
     </div>

@@ -67,7 +67,8 @@
             </div>
             <div class="room-option-body">
               <div class="room-rate">
-                <span class="rate-value">₹{{ getRoomBaseRate(room) | number }}</span>
+                <span class="rate-value">{{ settingsService.getCurrencySymbol() }}{{ getRoomBaseRate(room) | number
+                  }}</span>
                 <span class="rate-period">/night</span>
               </div>
               <div class="room-capacity">
@@ -230,7 +231,7 @@
                 <span class="checkmark"></span>
                 <span class="checkbox-text">
                   Extra Bed
-                  <span class="checkbox-price">₹500/night</span>
+                  <span class="checkbox-price">{{ settingsService.getCurrencySymbol() }}500/night</span>
                 </span>
               </label>
             </div>
@@ -260,7 +261,8 @@
               </div>
               <div class="summary-row">
                 <span>Rate per Night</span>
-                <span class="summary-value">₹{{ getRoomBaseRate(selectedRoom!) | number }}</span>
+                <span class="summary-value">{{ settingsService.getCurrencySymbol() }}{{ getRoomBaseRate(selectedRoom!) |
+                  number }}</span>
               </div>
             </div>
 
@@ -312,24 +314,25 @@
             <!-- Charges Breakdown -->
             <div class="charges-breakdown">
               <div class="charge-row">
-                <span>Room Charges ({{ totalNights }} nights × ₹{{ getRoomBaseRate(selectedRoom!) | number }})</span>
-                <span>₹{{ roomCharges | number }}</span>
+                <span>Room Charges ({{ totalNights }} nights × {{ settingsService.getCurrencySymbol() }}{{
+                  getRoomBaseRate(selectedRoom!) | number }})</span>
+                <span>{{ settingsService.getCurrencySymbol() }}{{ roomCharges | number }}</span>
               </div>
               <div class="charge-row" *ngIf="bookingDetails.extraBed">
-                <span>Extra Bed ({{ totalNights }} nights × ₹500)</span>
-                <span>₹{{ extraBedCharges | number }}</span>
+                <span>Extra Bed ({{ totalNights }} nights × {{ settingsService.getCurrencySymbol() }}500)</span>
+                <span>{{ settingsService.getCurrencySymbol() }}{{ extraBedCharges | number }}</span>
               </div>
               <div class="charge-row subtotal">
                 <span>Subtotal</span>
-                <span>₹{{ subtotal | number }}</span>
+                <span>{{ settingsService.getCurrencySymbol() }}{{ subtotal | number }}</span>
               </div>
               <div class="charge-row">
                 <span>GST (18%)</span>
-                <span>₹{{ taxAmount | number }}</span>
+                <span>{{ settingsService.getCurrencySymbol() }}{{ taxAmount | number }}</span>
               </div>
               <div class="charge-row total">
                 <span>Total Amount</span>
-                <span>₹{{ totalAmount | number }}</span>
+                <span>{{ settingsService.getCurrencySymbol() }}{{ totalAmount | number }}</span>
               </div>
             </div>
 
@@ -362,7 +365,7 @@
             <!-- Balance -->
             <div class="balance-display" [class.paid]="balanceAmount <= 0">
               <div class="balance-label">Balance Due</div>
-              <div class="balance-amount">₹{{ balanceAmount | number }}</div>
+              <div class="balance-amount">{{ settingsService.getCurrencySymbol() }}{{ balanceAmount | number }}</div>
             </div>
 
             <!-- WiFi Notice -->

@@ -68,10 +68,11 @@
           <span class="stat-icon revenue">💰</span>
           <span class="stat-growth positive">+{{ revenueData.growth }}%</span>
         </div>
-        <div class="stat-value large">₹{{ revenueData.totalRevenue | number }}</div>
+        <div class="stat-value large">{{ settingsService.getCurrencySymbol() }}{{ revenueData.totalRevenue | number }}
+        </div>
         <div class="stat-label">Total Revenue</div>
         <div class="stat-footer">
-          <span>Daily Average: ₹{{ revenueData.dailyAverage | number }}</span>
+          <span>Daily Average: {{ settingsService.getCurrencySymbol() }}{{ revenueData.dailyAverage | number }}</span>
         </div>
       </div>
 
@@ -85,7 +86,8 @@
               <span class="breakdown-label">Room Revenue</span>
             </div>
             <div class="breakdown-values">
-              <span class="breakdown-amount">₹{{ revenueData.roomRevenue | number }}</span>
+              <span class="breakdown-amount">{{ settingsService.getCurrencySymbol() }}{{ revenueData.roomRevenue |
+                number }}</span>
               <span class="breakdown-percent">0%</span>
             </div>
             <div class="breakdown-bar">
@@ -98,7 +100,8 @@
               <span class="breakdown-label">Food & Beverage</span>
             </div>
             <div class="breakdown-values">
-              <span class="breakdown-amount">₹{{ revenueData.foodRevenue | number }}</span>
+              <span class="breakdown-amount">{{ settingsService.getCurrencySymbol() }}{{ revenueData.foodRevenue |
+                number }}</span>
               <span class="breakdown-percent">0%</span>
             </div>
             <div class="breakdown-bar">
@@ -111,7 +114,8 @@
               <span class="breakdown-label">Other Services</span>
             </div>
             <div class="breakdown-values">
-              <span class="breakdown-amount">₹{{ revenueData.otherRevenue | number }}</span>
+              <span class="breakdown-amount">{{ settingsService.getCurrencySymbol() }}{{ revenueData.otherRevenue |
+                number }}</span>
               <span class="breakdown-percent">0%</span>
             </div>
             <div class="breakdown-bar">
@@ -145,7 +149,7 @@
               <td>{{ tx.guest }}</td>
               <td><span class="room-badge">{{ tx.room }}</span></td>
               <td><span class="type-badge" [class]="tx.type.toLowerCase()">{{ tx.type }}</span></td>
-              <td class="amount">₹{{ tx.amount | number }}</td>
+              <td class="amount">{{ settingsService.getCurrencySymbol() }}{{ tx.amount | number }}</td>
             </tr>
           </tbody>
         </table>
@@ -205,7 +209,7 @@
           'UPI' ? '📱' : '🏦' }}</div>
         <div class="payment-info">
           <span class="payment-mode">{{ payment.mode }}</span>
-          <span class="payment-amount">₹{{ payment.amount | number }}</span>
+          <span class="payment-amount">{{ settingsService.getCurrencySymbol() }}{{ payment.amount | number }}</span>
         </div>
         <div class="payment-percent">{{ payment.percentage }}%</div>
       </div>
@@ -220,23 +224,25 @@
         <div class="gst-grid">
           <div class="gst-item">
             <span class="gst-label">Total Taxable Amount</span>
-            <span class="gst-value">₹{{ gstSummary.totalTaxable | number }}</span>
+            <span class="gst-value">{{ settingsService.getCurrencySymbol() }}{{ gstSummary.totalTaxable | number
+              }}</span>
           </div>
           <div class="gst-item">
             <span class="gst-label">CGST (9%)</span>
-            <span class="gst-value">₹{{ gstSummary.cgst | number }}</span>
+            <span class="gst-value">{{ settingsService.getCurrencySymbol() }}{{ gstSummary.cgst | number }}</span>
           </div>
           <div class="gst-item">
             <span class="gst-label">SGST (9%)</span>
-            <span class="gst-value">₹{{ gstSummary.sgst | number }}</span>
+            <span class="gst-value">{{ settingsService.getCurrencySymbol() }}{{ gstSummary.sgst | number }}</span>
           </div>
           <div class="gst-item total">
             <span class="gst-label">Total GST Collected</span>
-            <span class="gst-value">₹{{ gstSummary.totalGst | number }}</span>
+            <span class="gst-value">{{ settingsService.getCurrencySymbol() }}{{ gstSummary.totalGst | number }}</span>
           </div>
           <div class="gst-item grand-total">
             <span class="gst-label">Grand Total (with GST)</span>
-            <span class="gst-value">₹{{ gstSummary.totalWithGst | number }}</span>
+            <span class="gst-value">{{ settingsService.getCurrencySymbol() }}{{ gstSummary.totalWithGst | number
+              }}</span>
           </div>
         </div>
       </div>

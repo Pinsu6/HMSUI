@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BookingService } from '../../core/services/booking.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { Booking } from '../../core/models/models';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -24,7 +25,8 @@ export class BookingManagementComponent implements OnInit, OnDestroy {
   constructor(
     private bookingService: BookingService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public settingsService: SettingsService
   ) { }
 
   ngOnInit() {

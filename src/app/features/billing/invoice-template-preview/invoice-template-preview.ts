@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { SettingsService } from '../../../core/services/settings.service';
 
 @Component({
   selector: 'app-invoice-template-preview',
@@ -7,5 +8,5 @@ import { Component } from '@angular/core';
   styleUrl: './invoice-template-preview.css',
 })
 export class InvoiceTemplatePreview {
-
+  constructor(public settingsService: SettingsService) { }
 }

@@ -83,7 +83,8 @@
       </div>
       <div class="room-card-body">
         <span class="room-type">{{ getRoomTypeName(room) }}</span>
-        <span class="room-rate">₹{{ getRoomBaseRate(room) | number }}/night</span>
+        <span class="room-rate">{{ settingsService.getCurrencySymbol() }}{{ getRoomBaseRate(room) | number
+          }}/night</span>
       </div>
       <div class="room-card-footer" *ngIf="room.status === 'Occupied'">
         <span class="guest-name">Occupied</span>
@@ -130,7 +131,7 @@
                   {{ getStatusIcon(room.status) }} {{ room.status }}
                 </span>
               </td>
-              <td>₹{{ getRoomBaseRate(room) | number }}</td>
+              <td>{{ settingsService.getCurrencySymbol() }}{{ getRoomBaseRate(room) | number }}</td>
               <td>-</td>
               <td>-</td>
               <td>
@@ -162,7 +163,7 @@
           <span class="type-count">{{ getRoomTypeCount(type) }} rooms</span>
         </div>
         <div class="type-rate">
-          <span class="rate-value">₹{{ type.baseRate | number }}</span>
+          <span class="rate-value">{{ settingsService.getCurrencySymbol() }}{{ type.baseRate | number }}</span>
           <span class="rate-period">/night</span>
         </div>
         <div class="type-details">
@@ -244,7 +245,8 @@
               </div>
               <div class="detail-row">
                 <span class="label">Base Rate:</span>
-                <span class="value">₹{{ getRoomBaseRate(selectedRoom) | number }}/night</span>
+                <span class="value">{{ settingsService.getCurrencySymbol() }}{{ getRoomBaseRate(selectedRoom) | number
+                  }}/night</span>
               </div>
               <div class="detail-row">
                 <span class="label">Max Guests:</span>

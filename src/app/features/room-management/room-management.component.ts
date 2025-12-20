@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoomService } from '../../core/services/room.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { Room, RoomType } from '../../core/models/models';
 import { ActivatedRoute } from '@angular/router';
 import { RoomManagementResolved } from '../../core/resolvers/room-management.resolver';
@@ -48,7 +49,8 @@ export class RoomManagementComponent implements OnInit {
   constructor(
     private roomService: RoomService,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public settingsService: SettingsService
   ) { }
 
   ngOnInit(): void {

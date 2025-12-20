@@ -11,35 +11,35 @@
   <div class="settings-layout">
     <!-- Sidebar Navigation -->
     <div class="settings-nav">
-      <button class="nav-item" [class.active]="activeTab === 'general'" (click)="activeTab = 'general'">
+      <button class="nav-item" [class.active]="activeTab === 'general'" [routerLink]="['/settings', 'general']">
         <span class="nav-icon">🏨</span>
         <span class="nav-label">Hotel Information</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'tax'" (click)="activeTab = 'tax'">
+      <button class="nav-item" [class.active]="activeTab === 'tax'" [routerLink]="['/settings', 'tax']">
         <span class="nav-icon">📋</span>
         <span class="nav-label">Tax Settings</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'wifi'" (click)="activeTab = 'wifi'">
+      <button class="nav-item" [class.active]="activeTab === 'wifi'" [routerLink]="['/settings', 'wifi']">
         <span class="nav-icon">📶</span>
         <span class="nav-label">WiFi Integration</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
+      <button class="nav-item" [class.active]="activeTab === 'users'" [routerLink]="['/settings', 'users']">
         <span class="nav-icon">👥</span>
         <span class="nav-label">User Management</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'services'" (click)="activeTab = 'services'">
+      <button class="nav-item" [class.active]="activeTab === 'services'" [routerLink]="['/settings', 'services']">
         <span class="nav-icon">🛎️</span>
         <span class="nav-label">Add Services</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'roomtypes'" (click)="activeTab = 'roomtypes'">
+      <button class="nav-item" [class.active]="activeTab === 'roomtypes'" [routerLink]="['/settings', 'roomtypes']">
         <span class="nav-icon">🛏️</span>
         <span class="nav-label">Room Types</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'currency'" (click)="activeTab = 'currency'">
+      <button class="nav-item" [class.active]="activeTab === 'currency'" [routerLink]="['/settings', 'currency']">
         <span class="nav-icon">💰</span>
         <span class="nav-label">Currency</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'backup'" (click)="activeTab = 'backup'">
+      <button class="nav-item" [class.active]="activeTab === 'backup'" [routerLink]="['/settings', 'backup']">
         <span class="nav-icon">💾</span>
         <span class="nav-label">Backup & Data</span>
       </button>
@@ -100,11 +100,10 @@
             </div>
             <div class="form-group">
               <label class="form-label">Currency</label>
-              <select class="form-select" [(ngModel)]="hotelSettings.currency">
-                <option value="INR">INR (₹)</option>
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
+              <select class="form-select" [(ngModel)]="hotelSettings.currency" (change)="onCurrencyChange()">
+                <option *ngFor="let currency of currencies" [value]="currency.currencyCode">
+                  {{ currency.currencyName }} ({{ currency.symbol }}) - {{ currency.currencyCode }}
+                </option>
               </select>
             </div>
             <div class="form-group">
@@ -333,7 +332,7 @@
               <tr>
                 <th>Service Name</th>
                 <th>Description</th>
-                <th>Rate (₹)</th>
+                <th>Rate ({{ hotelSettings.currencySymbol }})</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -347,7 +346,8 @@
                   <span class="service-desc">{{ service.description || '-' }}</span>
                 </td>
                 <td>
-                  <span class="service-rate">₹{{ service.rate | number:'1.2-2' }}</span>
+                  <span class="service-rate">{{ hotelSettings.currencySymbol }}{{ service.rate | number:'1.2-2'
+                    }}</span>
                 </td>
                 <td>
                   <span class="status-badge" [class.active]="service.isActive" [class.inactive]="!service.isActive">
@@ -404,7 +404,7 @@
             <thead>
               <tr>
                 <th>Type Name</th>
-                <th>Base Rate (₹)</th>
+                <th>Base Rate ({{ hotelSettings.currencySymbol }})</th>
                 <th>Max Guests</th>
                 <th>Amenities</th>
                 <th>Actions</th>
@@ -416,7 +416,8 @@
                   <span class="service-name">{{ roomType.name }}</span>
                 </td>
                 <td>
-                  <span class="service-rate">₹{{ roomType.baseRate | number:'1.2-2' }}</span>
+                  <span class="service-rate">{{ hotelSettings.currencySymbol }}{{ roomType.baseRate | number:'1.2-2'
+                    }}</span>
                 </td>
                 <td>
                   <span>{{ roomType.maxGuests }}</span>
@@ -628,7 +629,7 @@
             rows="3"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Rate (₹) *</label>
+          <label class="form-label">Rate ({{ hotelSettings.currencySymbol }}) *</label>
           <input type="number" class="form-input" [(ngModel)]="newService.rate" placeholder="Enter rate" min="0">
         </div>
         <div class="form-group">
@@ -667,7 +668,7 @@
             placeholder="e.g., Deluxe, Suite, Standard">
         </div>
         <div class="form-group">
-          <label class="form-label">Base Rate (₹) *</label>
+          <label class="form-label">Base Rate ({{ hotelSettings.currencySymbol }}) *</label>
           <input type="number" class="form-input" [(ngModel)]="newRoomType.baseRate" placeholder="Enter base rate"
             min="0">
         </div>

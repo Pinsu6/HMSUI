@@ -66,7 +66,8 @@
 
       <div class="booking-card-footer">
         <span class="amount-label">Estimated Total</span>
-        <span class="amount-value">₹{{ getNights(booking) * getRoomRate(booking) | number }}</span>
+        <span class="amount-value">{{ settingsService.getCurrencySymbol() }}{{ getNights(booking) * getRoomRate(booking)
+          | number }}</span>
       </div>
     </div>
   </div>
@@ -111,7 +112,8 @@
                 </div>
                 <div class="summary-item">
                   <span class="summary-label">Room Rate</span>
-                  <span class="summary-value">₹{{ getRoomRate(selectedBooking) | number }}/night</span>
+                  <span class="summary-value">{{ settingsService.getCurrencySymbol() }}{{ getRoomRate(selectedBooking) |
+                    number }}/night</span>
                 </div>
               </div>
             </div>
@@ -129,7 +131,8 @@
                     <span class="charge-date">{{ charge.date }}</span>
                   </div>
                   <div class="charge-actions">
-                    <span class="charge-amount">₹{{ charge.amount | number }}</span>
+                    <span class="charge-amount">{{ settingsService.getCurrencySymbol() }}{{ charge.amount | number
+                      }}</span>
                     <button class="btn btn-icon btn-ghost remove-btn" (click)="removeCharge(i)">🗑️</button>
                   </div>
                 </div>
@@ -170,17 +173,18 @@
               <!-- Charges Breakdown -->
               <div class="bill-breakdown">
                 <div class="bill-row">
-                  <span>Room Charges ({{ getNights(selectedBooking) }} × ₹{{ getRoomRate(selectedBooking) | number
+                  <span>Room Charges ({{ getNights(selectedBooking) }} × {{ settingsService.getCurrencySymbol() }}{{
+                    getRoomRate(selectedBooking) | number
                     }})</span>
-                  <span>₹{{ roomCharges | number }}</span>
+                  <span>{{ settingsService.getCurrencySymbol() }}{{ roomCharges | number }}</span>
                 </div>
                 <div class="bill-row" *ngIf="additionalCharges > 0">
                   <span>Additional Charges</span>
-                  <span>₹{{ additionalCharges | number }}</span>
+                  <span>{{ settingsService.getCurrencySymbol() }}{{ additionalCharges | number }}</span>
                 </div>
                 <div class="bill-row subtotal">
                   <span>Subtotal</span>
-                  <span>₹{{ subtotal | number }}</span>
+                  <span>{{ settingsService.getCurrencySymbol() }}{{ subtotal | number }}</span>
                 </div>
 
                 <!-- Discount -->
@@ -194,7 +198,7 @@
                     </div>
                     <span class="or-text">or</span>
                     <div class="discount-input">
-                      <span class="input-prefix">₹</span>
+                      <span class="input-prefix">{{ settingsService.getCurrencySymbol() }}</span>
                       <input type="number" class="form-input" placeholder="Amount" [(ngModel)]="discountAmount"
                         (ngModelChange)="discountPercent = 0">
                     </div>
@@ -203,15 +207,16 @@
 
                 <div class="bill-row discount" *ngIf="calculatedDiscount > 0">
                   <span>Discount</span>
-                  <span class="discount-value">-₹{{ calculatedDiscount | number }}</span>
+                  <span class="discount-value">-{{ settingsService.getCurrencySymbol() }}{{ calculatedDiscount | number
+                    }}</span>
                 </div>
                 <div class="bill-row">
                   <span>GST (18%)</span>
-                  <span>₹{{ taxAmount | number }}</span>
+                  <span>{{ settingsService.getCurrencySymbol() }}{{ taxAmount | number }}</span>
                 </div>
                 <div class="bill-row total">
                   <span>Total Amount</span>
-                  <span>₹{{ totalAmount | number }}</span>
+                  <span>{{ settingsService.getCurrencySymbol() }}{{ totalAmount | number }}</span>
                 </div>
               </div>
 
@@ -242,7 +247,7 @@
               <!-- Balance -->
               <div class="balance-section" [class.paid]="balanceAmount <= 0">
                 <span class="balance-label">Balance Due</span>
-                <span class="balance-value">₹{{ balanceAmount | number }}</span>
+                <span class="balance-value">{{ settingsService.getCurrencySymbol() }}{{ balanceAmount | number }}</span>
               </div>
             </div>
           </div>

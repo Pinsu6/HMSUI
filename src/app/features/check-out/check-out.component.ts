@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { BookingService } from '../../core/services/booking.service';
 import { BillingService } from '../../core/services/billing.service';
 import { InvoiceService } from '../../core/services/invoice.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { Booking, Charge, CheckOutDto, CreateInvoiceDto, AdditionalChargeDto } from '../../core/models/models';
 import { ActivatedRoute } from '@angular/router';
 import { CheckOutResolved } from '../../core/resolvers/check-out.resolver';
@@ -64,7 +65,8 @@ export class CheckOutComponent implements OnInit {
     private bookingService: BookingService,
     private billingService: BillingService,
     private invoiceService: InvoiceService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public settingsService: SettingsService
   ) { }
 
   ngOnInit(): void {
@@ -275,7 +277,7 @@ export class CheckOutComponent implements OnInit {
       }
 
       this.submitting = false;
-      alert(`Check-out successful for Room ${this.selectedBooking?.room?.number}!\n\nTotal: ₹${this.totalAmount}\nBalance: ₹${this.balanceAmount}\n\nWiFi access has been deactivated.\nRoom marked as "Dirty" for cleaning.`);
+      alert(`Check-out successful for Room ${this.selectedBooking?.room?.number}!\n\nTotal: ${this.settingsService.getCurrencySymbol()}${this.totalAmount}\nBalance: ${this.settingsService.getCurrencySymbol()}${this.balanceAmount}\n\nWiFi access has been deactivated.\nRoom marked as "Dirty" for cleaning.`);
       this.closeModal();
       this.loadActiveBookings();
     } catch (err) {

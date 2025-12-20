@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { BookingService } from '../../core/services/booking.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { Invoice } from '../../core/models/models';
 
 @Component({
@@ -24,7 +25,8 @@ export class BillingComponent implements OnInit {
 
   constructor(
     private invoiceService: InvoiceService,
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    public settingsService: SettingsService
   ) { }
 
   ngOnInit() {

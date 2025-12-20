@@ -5,6 +5,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RoomService } from '../../core/services/room.service';
 import { BookingService } from '../../core/services/booking.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { DashboardStats, Booking, Room } from '../../core/models/models';
 import { DashboardResolvedData } from '../../core/resolvers/dashboard.resolver';
 
@@ -66,6 +67,7 @@ export class DashboardComponent implements OnInit {
     private route: ActivatedRoute,
     private authService: AuthService,
     private cdr: ChangeDetectorRef, // Added CDR
+    public settingsService: SettingsService
   ) {
     effect(() => {
       const user = this.authService.currentUser();

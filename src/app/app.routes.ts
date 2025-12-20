@@ -10,6 +10,7 @@ import { ReportsComponent } from './features/reports/reports.component';
 import { SettingsComponent } from './features/settings/settings.component';
 import { LoginComponent } from './features/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
+import { GuestGuard } from './core/guards/guest.guard';
 import { dashboardResolver } from './core/resolvers/dashboard.resolver';
 import { roomManagementResolver } from './core/resolvers/room-management.resolver';
 import { customerManagementResolver } from './core/resolvers/customer-management.resolver';
@@ -21,8 +22,12 @@ import { BookingDetailsComponent } from './features/booking-management/booking-d
 import { InvoiceTemplatePreview } from './features/billing/invoice-template-preview/invoice-template-preview';
 
 export const routes: Routes = [
-  // Login route - public, bina guard ke
-  { path: 'login', component: LoginComponent },
+  // Login route - public, lekin agar logged in hai to dashboard pe redirect
+  {
+    path: 'login',
+    component: LoginComponent,
+    canActivate: [GuestGuard]
+  },
 
   // Protected routes - sirf login hone ke baad accessible
   {
@@ -42,6 +47,7 @@ export const routes: Routes = [
       { path: 'billing/invoice-template', component: InvoiceTemplatePreview },
       { path: 'reports', component: ReportsComponent },
       { path: 'settings', component: SettingsComponent },
+      { path: 'settings/:tab', component: SettingsComponent },
       { path: 'wifi-logs', component: WiFiLogsComponent }
     ]
   },

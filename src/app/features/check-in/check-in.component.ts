@@ -70,7 +70,7 @@ export class CheckInComponent implements OnInit {
     private roomService: RoomService,
     private bookingService: BookingService,
     private guestService: GuestService,
-    private settingsService: SettingsService,
+    public settingsService: SettingsService,
     private route: ActivatedRoute,
     private router: Router
   ) { }

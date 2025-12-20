@@ -162,7 +162,7 @@
                 <td>{{ departure.expectedCheckOutTime | date:'shortTime' }}</td>
                 <td>
                   <span [class.text-danger]="departure.totalAmount > 0">
-                    ₹{{ departure.totalAmount | number }}
+                    {{ settingsService.getCurrencySymbol() }}{{ departure.totalAmount | number }}
                   </span>
                 </td>
                 <td>

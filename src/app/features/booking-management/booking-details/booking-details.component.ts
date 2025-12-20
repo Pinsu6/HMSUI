@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BookingService } from '../../../core/services/booking.service';
 import { GuestService } from '../../../core/services/guest.service';
 import { BillingService } from '../../../core/services/billing.service';
+import { SettingsService } from '../../../core/services/settings.service';
 import { Booking, Charge, Payment } from '../../../core/models/models';
 import { FormsModule } from '@angular/forms';
 
@@ -46,7 +47,8 @@ export class BookingDetailsComponent implements OnInit {
     private bookingService: BookingService,
     private guestService: GuestService,
     private billingService: BillingService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public settingsService: SettingsService
   ) { }
 
   ngOnInit() {
@@ -111,22 +113,31 @@ export class BookingDetailsComponent implements OnInit {
     if (!this.booking) return;
 
     try {
-      const addedCharge = await this.billingService.addCharge({
+      const chargeData: any = {
         bookingId: this.booking.bookingId,
         description: this.newCharge.description,
         amount: this.newCharge.amount,
         category: this.newCharge.category,
         date: new Date()
-      });
+      };
 
-      this.charges.push(addedCharge);
+      const response = await this.billingService.addCharge(chargeData);
 
-      // Update local booking total if needed or just rely on display
-      // User requested "wo charz totalamount mai add hoga"
-      // We can update the UI immediately
+      // Create a display object combining local data
+      // Check if response contains an ID, otherwise use 0/temp
+      const displayCharge: Charge = {
+        chargeId: response && response.chargeId ? response.chargeId : 0,
+        ...chargeData
+      };
+
+      this.charges.push(displayCharge);
+
       if (this.booking.totalAmount !== undefined) {
         this.booking.totalAmount += this.newCharge.amount;
       }
+
+      // Clear form
+      this.newCharge = { description: '', amount: 0, category: 'Service' };
 
       alert('Charge added successfully');
       this.showAddChargeModal = false;

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { GuestService } from '../../core/services/guest.service';
 import { BookingService } from '../../core/services/booking.service';
 import { BillingService } from '../../core/services/billing.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { Guest, Booking } from '../../core/models/models';
 import { ActivatedRoute } from '@angular/router';
 import { CustomerManagementResolved } from '../../core/resolvers/customer-management.resolver';
@@ -67,7 +68,8 @@ export class CustomerManagementComponent implements OnInit {
     private guestService: GuestService,
     private bookingService: BookingService,
     private billingService: BillingService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public settingsService: SettingsService
   ) { }
 
   ngOnInit(): void {

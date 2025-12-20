@@ -26,11 +26,6 @@ export class LoginComponent {
     private router: Router,
     private route: ActivatedRoute
   ) {
-    // Agar already logged in hai, to dashboard pe bhej do
-    if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/dashboard']);
-    }
-
     // Return URL store karo
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
   }
@@ -57,22 +52,27 @@ export class LoginComponent {
 
     this.isLoading = true;
 
-    try {
-      const result = await this.authService.login(this.username.trim(), this.password);
+    // Static login - hardcoded credentials check
+    const validUsername = 'whitepearl';
+    const validPassword = 'whitepearl1234#';
 
-      if (result.success) {
-        this.successMessage = result.message;
+    if (this.username.trim() === validUsername && this.password === validPassword) {
+      this.successMessage = 'Login successful! Redirecting...';
 
-        // Small delay for success animation
-        setTimeout(() => {
-          this.router.navigate([this.returnUrl]);
-        }, 500);
-      } else {
-        this.errorMessage = result.message;
-        this.isLoading = false;
-      }
-    } catch (error) {
-      this.errorMessage = 'An unexpected error occurred';
+      // Store user data in localStorage for session (same key as AuthService)
+      const userData = { userId: 1, name: validUsername, role: 'Admin' };
+      localStorage.setItem('hotel_auth_user', JSON.stringify(userData));
+
+      // Update AuthService signals for proper authentication state
+      this.authService.currentUser.set(userData);
+      this.authService.isLoggedIn.set(true);
+
+      // Small delay for success animation
+      setTimeout(() => {
+        this.router.navigate([this.returnUrl]);
+      }, 500);
+    } else {
+      this.errorMessage = 'Invalid username or password';
       this.isLoading = false;
     }
   }

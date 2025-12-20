@@ -111,7 +111,7 @@
           <span class="footer-label">Visits</span>
         </div>
         <div class="footer-stat">
-          <span class="footer-value">₹{{ guest.totalSpent | number }}</span>
+          <span class="footer-value">{{ settingsService.getCurrencySymbol() }}{{ guest.totalSpent | number }}</span>
           <span class="footer-label">Total Spent</span>
         </div>
         <div class="footer-stat">
@@ -165,7 +165,7 @@
                 </span>
               </td>
               <td>{{ guest.totalVisits }}</td>
-              <td>₹{{ guest.totalSpent | number }}</td>
+              <td>{{ settingsService.getCurrencySymbol() }}{{ guest.totalSpent | number }}</td>
               <td>{{ guest.lastVisit || '-' }}</td>
               <td>
                 <div class="action-buttons">
@@ -326,7 +326,8 @@
                   <span class="stat-text">Total Visits</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-number">₹{{ selectedGuest.totalSpent | number }}</span>
+                  <span class="stat-number">{{ settingsService.getCurrencySymbol() }}{{ selectedGuest.totalSpent |
+                    number }}</span>
                   <span class="stat-text">Total Spent</span>
                 </div>
                 <div class="stat-item">
@@ -373,7 +374,7 @@
             [(ngModel)]="newCharge.description">
         </div>
         <div class="form-group">
-          <label class="form-label">Amount (₹) *</label>
+          <label class="form-label">Amount ({{ settingsService.getCurrencySymbol() }}) *</label>
           <input type="number" class="form-input" placeholder="0.00" [(ngModel)]="newCharge.amount">
         </div>
         <div class="form-group">

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SettingsService } from '../../core/services/settings.service';
 
 @Component({
   selector: 'app-reports',
@@ -59,4 +60,6 @@ export class ReportsComponent {
   printReport() {
     alert(`Printing ${this.activeTab} report`);
   }
+
+  constructor(public settingsService: SettingsService) { }
 }

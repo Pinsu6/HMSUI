@@ -68,7 +68,8 @@
                 {{ booking.status }}
               </span>
             </td>
-            <td class="font-mono font-medium">₹{{ booking.totalAmount | number:'1.2-2' }}</td>
+            <td class="font-mono font-medium">{{ settingsService.getCurrencySymbol() }}{{ booking.totalAmount |
+              number:'1.2-2' }}</td>
             <td>
               <button class="btn btn-sm btn-secondary" (click)="viewCustomerInfo(booking)">
                 View Details

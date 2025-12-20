@@ -10,6 +10,7 @@ export interface HotelSettings {
   checkInTime: string;
   checkOutTime: string;
   currency: string;
+  currencySymbol?: string;
   timezone: string;
 }
 
@@ -103,6 +104,10 @@ export class SettingsService {
 
   getDefaultCurrency(): string {
     return this.getHotelSettings().currency;
+  }
+
+  getCurrencySymbol(): string {
+    return this.getHotelSettings().currencySymbol || '₹';
   }
 
   getHotelName(): string {

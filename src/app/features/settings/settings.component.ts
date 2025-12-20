@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AddServicesService, ServiceDto } from '../../core/services/add-services.service';
@@ -18,7 +19,7 @@ interface User {
 
 @Component({
   selector: 'app-settings',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
@@ -80,7 +81,9 @@ export class SettingsComponent implements OnInit {
     private currencyService: CurrencyService,
     private settingsService: SettingsService,
     private hotelService: HotelService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -89,12 +92,30 @@ export class SettingsComponent implements OnInit {
     this.loadServices();
     this.loadRoomTypes();
     this.loadCurrencies();
+
+    // Handle initial tab selection from URL
+    this.route.params.subscribe(params => {
+      if (params['tab']) {
+        this.activeTab = params['tab'];
+      } else {
+        // If no tab specified, default to general and update URL
+        this.router.navigate(['/settings', 'general'], { replaceUrl: true });
+      }
+    });
   }
 
   // Load settings from localStorage
   loadSettings() {
     this.hotelSettings = this.settingsService.getHotelSettings();
     this.taxSettings = this.settingsService.getTaxSettings();
+  }
+
+  onCurrencyChange() {
+    const selectedCurrency = this.currencies.find(c => c.currencyCode === this.hotelSettings.currency);
+    if (selectedCurrency) {
+      this.hotelSettings.currencySymbol = selectedCurrency.symbol;
+      this.cdr.detectChanges();
+    }
   }
 
   // Load Hotel Information from API
@@ -398,6 +419,12 @@ export class SettingsComponent implements OnInit {
         address: this.hotelSettings.address,
         gstin: this.hotelSettings.gstin
       });
+
+      // Find selected currency symbol
+      const selectedCurrencyProxy = this.currencies.find(c => c.currencyCode === this.hotelSettings.currency);
+      if (selectedCurrencyProxy) {
+        this.hotelSettings.currencySymbol = selectedCurrencyProxy.symbol;
+      }
 
       // Save hotel and tax settings to localStorage
       this.settingsService.saveHotelSettings(this.hotelSettings);
