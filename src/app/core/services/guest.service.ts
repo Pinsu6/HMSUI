@@ -164,7 +164,7 @@ export class GuestService {
       const data = response.responseData ? JSON.parse(response.responseData) : response;
 
       if (Array.isArray(data)) {
-        return data.map((item: any) => ({
+        const history = data.map((item: any) => ({
           bookingId: item.BookingId,
           guestId: item.GuestId,
           roomId: item.RoomId,
@@ -189,6 +189,9 @@ export class GuestService {
             status: 'Occupied' as const
           }
         }));
+
+        // Strictly filter by guestId on client side as API might return broader results
+        return history.filter((h: any) => h.guestId === id);
       }
       return [];
     } catch (error) {

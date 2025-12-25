@@ -1,10 +1,7 @@
 export const environment = {
   production: true,
-
-  // Reverse Proxy use kar rahe hain
-  // Frontend: HTTPS pe chalega
-  // API calls: /api se jayengi, IIS proxy karke HTTP API pe bhejega
-  // 
-  // IIS mein URL Rewrite rule lagana padega (web.config mein hai)
-  apiUrl: '/api'
+  // Production API URL - use direct URL or relative based on deployment
+  // If deploying on same domain with IIS reverse proxy, use '/api'
+  // If deploying on different domain, use full URL
+  apiUrl: 'http://apibook.dorwaila.com/api'
 };

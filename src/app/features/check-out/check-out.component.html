@@ -210,9 +210,14 @@
                   <span class="discount-value">-{{ settingsService.getCurrencySymbol() }}{{ calculatedDiscount | number
                     }}</span>
                 </div>
-                <div class="bill-row">
-                  <span>GST (18%)</span>
+                <div class="bill-row" *ngIf="taxSettings.enableGst">
+                  <span>GST ({{ taxPercentage }}%)</span>
                   <span>{{ settingsService.getCurrencySymbol() }}{{ taxAmount | number }}</span>
+                </div>
+                <!-- Service Charge -->
+                <div class="bill-row" *ngIf="taxSettings.enableServiceCharge">
+                  <span>Service Charge ({{ taxSettings.serviceChargeRate }}%)</span>
+                  <span>{{ settingsService.getCurrencySymbol() }}{{ serviceChargeAmount | number }}</span>
                 </div>
                 <div class="bill-row total">
                   <span>Total Amount</span>

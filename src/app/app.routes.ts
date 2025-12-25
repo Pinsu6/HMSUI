@@ -16,6 +16,7 @@ import { roomManagementResolver } from './core/resolvers/room-management.resolve
 import { customerManagementResolver } from './core/resolvers/customer-management.resolver';
 import { checkInResolver } from './core/resolvers/check-in.resolver';
 import { checkOutResolver } from './core/resolvers/check-out.resolver';
+import { settingsResolver } from './core/resolvers/settings.resolver';
 import { WiFiLogsComponent } from './features/wifi-logs/wifi-logs.component';
 import { BookingManagementComponent } from './features/booking-management/booking-management.component';
 import { BookingDetailsComponent } from './features/booking-management/booking-details/booking-details.component';
@@ -46,8 +47,8 @@ export const routes: Routes = [
       { path: 'billing', component: BillingComponent },
       { path: 'billing/invoice-template', component: InvoiceTemplatePreview },
       { path: 'reports', component: ReportsComponent },
-      { path: 'settings', component: SettingsComponent },
-      { path: 'settings/:tab', component: SettingsComponent },
+      { path: 'settings', component: SettingsComponent, resolve: { data: settingsResolver } },
+      { path: 'settings/:tab', component: SettingsComponent, resolve: { data: settingsResolver } },
       { path: 'wifi-logs', component: WiFiLogsComponent }
     ]
   },

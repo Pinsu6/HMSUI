@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface MenuItem {
   icon: string;
@@ -12,14 +13,18 @@ interface MenuItem {
 
 @Component({
   selector: 'app-sidebar',
+  standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
+  private authService = inject(AuthService);
   isCollapsed = false;
 
-  menuItems: MenuItem[] = [
+  userRole = computed(() => this.authService.currentUser()?.role);
+
+  allMenuItems: MenuItem[] = [
     { icon: '📊', label: 'Dashboard', route: '/dashboard' },
     { icon: '🛏️', label: 'Room Management', route: '/rooms' },
     { icon: '👥', label: 'Customer Management', route: '/customers' },
@@ -38,6 +43,17 @@ export class SidebarComponent {
     { icon: '📡', label: 'WiFi Logs', route: '/wifi-logs' },
     { icon: '⚙️', label: 'Settings', route: '/settings' }
   ];
+
+  filteredMenuItems = computed(() => {
+    const role = this.userRole();
+    if (role === 'Receptionist') {
+      // Receptionist: Check-in, check-out, add charges (via bookings), view dashboard
+      const allowedRoutes = ['/dashboard', '/bookings', '/check-in', '/check-out'];
+      return this.allMenuItems.filter(item => allowedRoutes.includes(item.route));
+    }
+    // Admin & Manager see everything (Manager restrictions are inside Settings)
+    return this.allMenuItems;
+  });
 
   toggleSidebar() {
     this.isCollapsed = !this.isCollapsed;

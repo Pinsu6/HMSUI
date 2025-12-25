@@ -46,6 +46,9 @@ export class CustomerManagementComponent implements OnInit {
     category: 'Service'
   };
 
+  // Detail Modal Tabs
+  activeDetailTab: 'profile' | 'history' | 'preferences' = 'profile';
+
   // ID Types
   idTypes = ['Aadhar Card', 'Passport', 'Driving License', 'Voter ID', 'PAN Card'];
 
@@ -214,6 +217,7 @@ export class CustomerManagementComponent implements OnInit {
   // Methods
   async openGuestDetails(guest: GuestDisplay) {
     this.selectedGuest = guest;
+    this.activeDetailTab = 'profile'; // Reset to profile tab
     this.showGuestDetailsModal = true;
 
     // Load guest history
@@ -274,13 +278,18 @@ export class CustomerManagementComponent implements OnInit {
   }
 
   async saveCharge() {
-    if (!this.selectedGuest || this.selectedGuest.status !== 'active') return;
+    if (!this.selectedGuest || this.selectedGuest.status !== 'active') {
+      alert('Guest is not currently active.');
+      return;
+    }
 
     try {
+      // Refresh active bookings to ensure we have the latest data
       const activeBookings = await this.bookingService.getActiveBookings();
       const booking = activeBookings.find(b => b.guestId === this.selectedGuest?.guestId);
 
       if (booking) {
+        console.log('Adding charge to booking:', booking.bookingId);
         await this.billingService.addCharge({
           bookingId: booking.bookingId,
           description: this.newCharge.description,
@@ -289,22 +298,20 @@ export class CustomerManagementComponent implements OnInit {
           date: new Date()
         });
 
-        // We do not manually update booking.totalAmount here to avoid overwriting other booking details with defaults.
-        // The CheckOut component handles the final total calculation dynamically by summing Room Charges + Additional Charges.
-
         alert('Charge added successfully');
         this.showAddChargeModal = false;
 
-        // Refresh guest status local view
+        // Refresh guest local view
         if (this.selectedGuest) {
           this.selectedGuest.totalSpent = (this.selectedGuest.totalSpent || 0) + this.newCharge.amount;
         }
       } else {
-        alert('Active booking not found for this guest');
+        console.error('Active booking not found for guestId:', this.selectedGuest.guestId, 'Active Bookings:', activeBookings);
+        alert(`Active booking not found for this guest (ID: ${this.selectedGuest.guestId}). Please verify the guest is currently checked in.`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to add charge:', err);
-      alert('Failed to add charge');
+      alert('Failed to add charge: ' + (err.message || 'Unknown error'));
     }
   }
 

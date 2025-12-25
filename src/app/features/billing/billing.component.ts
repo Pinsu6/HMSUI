@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InvoiceService } from '../../core/services/invoice.service';
@@ -26,7 +26,8 @@ export class BillingComponent implements OnInit {
   constructor(
     private invoiceService: InvoiceService,
     private bookingService: BookingService,
-    public settingsService: SettingsService
+    public settingsService: SettingsService,
+    private cd: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -41,32 +42,38 @@ export class BillingComponent implements OnInit {
         this.bookingService.getBookings()
       ]);
 
-      const bookingMap = new Map(bookings.map(b => [b.bookingId, b]));
+      // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+      // caused by updates happening during the same change detection cycle as LoadingService
+      setTimeout(() => {
+        const bookingMap = new Map(bookings.map(b => [b.bookingId, b]));
 
-      // Merge booking info so UI can show guest/room/stay/amount even when invoice API only returns bookingId
-      this.invoices = invoices.map(inv => {
-        const booking = bookingMap.get(inv.bookingId);
-        if (!booking) {
-          return inv;
-        }
+        // Merge booking info so UI can show guest/room/stay/amount even when invoice API only returns bookingId
+        this.invoices = invoices.map(inv => {
+          const booking = bookingMap.get(inv.bookingId);
+          if (!booking) {
+            return inv;
+          }
 
-        return {
-          ...inv,
-          guestId: inv.guestId ?? booking.guestId,
-          roomId: inv.roomId ?? booking.roomId,
-          guestName: inv.guestName || booking.guest?.fullName,
-          roomNumber: inv.roomNumber || booking.room?.number,
-          checkInDate: inv.checkInDate || booking.checkInTime,
-          checkOutDate: inv.checkOutDate || booking.expectedCheckOutTime,
-          adults: inv.adults ?? booking.adults,
-          children: inv.children ?? booking.children,
-          grandTotal: inv.grandTotal ?? booking.totalAmount
-        };
+          return {
+            ...inv,
+            guestId: inv.guestId ?? booking.guestId,
+            roomId: inv.roomId ?? booking.roomId,
+            guestName: inv.guestName || booking.guest?.fullName,
+            roomNumber: inv.roomNumber || booking.room?.number,
+            checkInDate: inv.checkInDate || booking.checkInTime,
+            checkOutDate: inv.checkOutDate || booking.expectedCheckOutTime,
+            adults: inv.adults ?? booking.adults,
+            children: inv.children ?? booking.children,
+            grandTotal: inv.grandTotal ?? booking.totalAmount
+          };
+        });
+        this.loading = false;
+        this.cd.detectChanges();
       });
     } catch (error) {
       console.error('Error loading invoices:', error);
-    } finally {
       this.loading = false;
+      this.cd.detectChanges();
     }
   }
 

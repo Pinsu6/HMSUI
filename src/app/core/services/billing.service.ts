@@ -17,7 +17,20 @@ export class BillingService {
     try {
       const response: any = await firstValueFrom(this.http.post<any>(`${this.apiUrl}/Charge/Get`, { bookingId }));
       const data = response.responseData ? JSON.parse(response.responseData) : response;
-      return Array.isArray(data) ? data : [];
+
+      if (Array.isArray(data)) {
+        const mapped = data.map((item: any) => ({
+          chargeId: item.ChargeId || item.chargeId,
+          bookingId: item.BookingId || item.bookingId,
+          description: item.Description || item.description,
+          category: item.Category || item.category,
+          amount: item.Amount || item.amount,
+          date: item.Date ? new Date(item.Date) : new Date()
+        }));
+        // Client-side filtering to ensure strict safety
+        return mapped.filter(c => c.bookingId === bookingId);
+      }
+      return [];
     } catch (error: any) {
       if (error.status === 404) {
         return [];

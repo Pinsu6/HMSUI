@@ -8,7 +8,7 @@
   <!-- Navigation Menu -->
   <nav class="sidebar-nav">
     <ul class="nav-list">
-      <li *ngFor="let item of menuItems" class="nav-item" [class.has-submenu]="item.children">
+      <li *ngFor="let item of filteredMenuItems()" class="nav-item" [class.has-submenu]="item.children">
         <a [routerLink]="item.route" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
           class="nav-link" [title]="isCollapsed ? item.label : ''" (click)="toggleSubmenu(item)">
           <span class="nav-icon">{{ item.icon }}</span>

@@ -7,6 +7,7 @@ import { RoomTypeService, RoomTypeDto } from '../../core/services/room-type.serv
 import { CurrencyService, CurrencyDto } from '../../core/services/currency.service';
 import { SettingsService, HotelSettings, TaxSettings } from '../../core/services/settings.service';
 import { HotelService, HotelInformationDto } from '../../core/services/hotel.service';
+import { SettingsResolvedData } from '../../core/resolvers/settings.resolver';
 
 interface User {
   id: number;
@@ -16,6 +17,8 @@ interface User {
   status: 'active' | 'inactive';
   lastLogin: string;
 }
+
+import { AuthService, UserRegistrationDto } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-settings',
@@ -27,6 +30,23 @@ interface User {
 export class SettingsComponent implements OnInit {
   // Active Tab
   activeTab = 'general';
+
+  // Role based access
+  get visibleTabs(): string[] {
+    const role = this.authService.currentUser()?.role;
+    if (role === 'Manager') {
+      return ['services', 'roomtypes']; // Only operational settings
+    }
+    if (role === 'Receptionist') {
+      return []; // No settings access
+    }
+    // Admin sees all
+    return ['general', 'tax', 'wifi', 'users', 'services', 'roomtypes', 'currency', 'backup'];
+  }
+
+  isTabVisible(tab: string): boolean {
+    return this.visibleTabs.includes(tab);
+  }
 
   // Loading states
   hotelInfoLoading = false;
@@ -82,6 +102,7 @@ export class SettingsComponent implements OnInit {
     private currencyService: CurrencyService,
     private settingsService: SettingsService,
     private hotelService: HotelService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router
@@ -89,18 +110,47 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {
     this.loadSettings();
-    this.loadHotelInformation();
-    this.loadServices();
-    this.loadRoomTypes();
-    this.loadCurrencies();
+
+    // Get pre-fetched data from resolver - no delay!
+    const resolvedData = this.route.snapshot.data['data'] as SettingsResolvedData;
+    if (resolvedData) {
+      // Use pre-fetched data instantly
+      this.currencies = (resolvedData.currencies || []).filter(c => c.isActive);
+      this.services = resolvedData.services;
+      this.roomTypes = resolvedData.roomTypes;
+      this.hotelInfo = resolvedData.hotelInfo;
+
+      // Update hotelSettings with API data
+      if (this.hotelInfo.hotelName) {
+        this.hotelSettings.name = this.hotelInfo.hotelName;
+        this.hotelSettings.email = this.hotelInfo.email || '';
+        this.hotelSettings.phone = this.hotelInfo.phoneNumber || '';
+        this.hotelSettings.website = this.hotelInfo.website || '';
+        this.hotelSettings.address = this.hotelInfo.address || '';
+        this.hotelSettings.gstin = this.hotelInfo.gstin || '';
+      }
+
+      this.cdr.detectChanges();
+    }
 
     // Handle initial tab selection from URL
     this.route.params.subscribe(params => {
-      if (params['tab']) {
-        this.activeTab = params['tab'];
+      const requestedTab = params['tab'];
+
+      if (requestedTab && this.isTabVisible(requestedTab)) {
+        this.activeTab = requestedTab;
+        if (this.activeTab === 'users') {
+          this.loadUsers();
+        }
       } else {
-        // If no tab specified, default to general and update URL
-        this.router.navigate(['/settings', 'general'], { replaceUrl: true });
+        // If no tab specified or not allowed, go to first visible tab
+        const firstTab = this.visibleTabs[0];
+        if (firstTab) {
+          this.router.navigate(['/settings', firstTab], { replaceUrl: true });
+        } else {
+          // No visible tabs? Redirect to dashboard
+          this.router.navigate(['/dashboard']);
+        }
       }
     });
   }
@@ -151,6 +201,7 @@ export class SettingsComponent implements OnInit {
       console.error('Error loading services:', error);
     } finally {
       this.serviceLoading = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -257,6 +308,7 @@ export class SettingsComponent implements OnInit {
       console.error('Error loading room types:', error);
     } finally {
       this.roomTypeLoading = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -346,11 +398,13 @@ export class SettingsComponent implements OnInit {
   async loadCurrencies() {
     try {
       this.currencyLoading = true;
-      this.currencies = await this.currencyService.getCurrencies();
+      const allCurrencies = await this.currencyService.getCurrencies();
+      this.currencies = allCurrencies.filter(c => c.isActive);
     } catch (error) {
       console.error('Error loading currencies:', error);
     } finally {
       this.currencyLoading = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -418,6 +472,10 @@ export class SettingsComponent implements OnInit {
     this.currencyService.insertUpdateCurrency(updatedCurrency)
       .then(() => {
         currency.isActive = !currency.isActive;
+        if (!currency.isActive) {
+          // Remove from list if inactive to satisfy "don't show inactive" requirement
+          this.currencies = this.currencies.filter(c => c.currencyId !== currency.currencyId);
+        }
       })
       .catch(error => {
         console.error('Error toggling currency status:', error);
@@ -462,12 +520,14 @@ export class SettingsComponent implements OnInit {
   users: User[] = [];
 
   // New User Form
+  // New User Form
   showAddUserModal = false;
-  newUser = {
+  isEditingUser = false;
+  newUser: { name: string; email: string; password: string; role: 'Admin' | 'Manager' | 'Receptionist'; id?: number } = {
     name: '',
     email: '',
     password: '',
-    role: 'Receptionist' as const
+    role: 'Receptionist'
   };
 
   // Methods
@@ -509,19 +569,115 @@ export class SettingsComponent implements OnInit {
     alert('Testing WiFi API connection...\n\nConnection successful! ✓');
   }
 
-  addUser() {
+  async addUser() {
     if (this.newUser.name && this.newUser.email && this.newUser.password) {
-      this.users.push({
-        id: this.users.length + 1,
-        name: this.newUser.name,
-        email: this.newUser.email,
-        role: this.newUser.role,
+      try {
+        const userDto: UserRegistrationDto = {
+          Name: this.newUser.name,
+          Email: this.newUser.email,
+          PasswordHash: this.newUser.password,
+          Role: this.newUser.role
+        };
+
+        const result = await this.authService.addUser(userDto);
+
+        if (result.success) {
+          alert('User added successfully!');
+          this.showAddUserModal = false;
+          this.newUser = { name: '', email: '', password: '', role: 'Receptionist' };
+
+          // Refresh users list if possible
+          await this.loadUsers();
+        } else {
+          alert(result.message);
+        }
+      } catch (error) {
+        console.error('Error adding user:', error);
+        alert('Failed to add user. Please try again.');
+      }
+    } else {
+      alert('Please fill in all required fields.');
+    }
+  }
+
+  async loadUsers() {
+    try {
+      const apiUsers = await this.authService.getUsers();
+      this.users = apiUsers.map(u => ({
+        id: u.userId,
+        name: u.name,
+        email: u.email || '',
+        role: (u.role as any) || 'Receptionist',
         status: 'active',
-        lastLogin: 'Never'
-      });
-      this.showAddUserModal = false;
-      this.newUser = { name: '', email: '', password: '', role: 'Receptionist' };
-      alert('User added successfully!');
+        lastLogin: 'Never' // API doesn't return this yet
+      }));
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  }
+
+  openAddUserModal() {
+    this.resetUserForm();
+    this.showAddUserModal = true;
+  }
+
+  editUser(user: User) {
+    this.isEditingUser = true;
+    this.newUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      password: '', // Password optional on edit usually, but backend might require it or handle blank
+      role: user.role
+    };
+    this.showAddUserModal = true;
+  }
+
+  resetUserForm() {
+    this.isEditingUser = false;
+    this.newUser = {
+      name: '',
+      email: '',
+      password: '',
+      role: 'Receptionist'
+    };
+  }
+
+  async saveUser() {
+    if (this.newUser.name && this.newUser.email && (this.isEditingUser || this.newUser.password)) {
+      try {
+        const userDto: UserRegistrationDto = {
+          Name: this.newUser.name,
+          Email: this.newUser.email,
+          PasswordHash: this.isEditingUser ? '' : (this.newUser.password || ''),
+          Role: this.newUser.role
+        };
+
+        if (this.isEditingUser && this.newUser.id) {
+          userDto.UserId = this.newUser.id;
+        }
+
+        const result = await this.authService.addUser(userDto);
+
+        if (result.success) {
+          alert(this.isEditingUser ? 'User updated successfully!' : 'User added successfully!');
+
+          // Force close and reset
+          this.showAddUserModal = false;
+          this.resetUserForm();
+          this.cdr.detectChanges(); // Force UI update
+
+          await this.loadUsers();
+        } else {
+          alert(result.message);
+        }
+      } catch (error) {
+        console.error('Error saving user:', error);
+        alert('Failed to save user. Please try again.');
+      }
+    } else {
+      alert('Please fill in all required fields.');
     }
   }
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -24,9 +24,9 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {
-    // Return URL store karo
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
   }
 
@@ -35,11 +35,9 @@ export class LoginComponent {
   }
 
   async onSubmit(): Promise<void> {
-    // Clear previous messages
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Validation
     if (!this.username.trim()) {
       this.errorMessage = 'Please enter your username';
       return;
@@ -51,29 +49,28 @@ export class LoginComponent {
     }
 
     this.isLoading = true;
+    this.cdr.detectChanges(); // Force check after setting loading
 
-    // Static login - hardcoded credentials check
-    const validUsername = 'whitepearl';
-    const validPassword = 'whitepearl1234#';
+    try {
+      const result = await this.authService.login(this.username, this.password);
 
-    if (this.username.trim() === validUsername && this.password === validPassword) {
-      this.successMessage = 'Login successful! Redirecting...';
+      if (result.success) {
+        this.successMessage = result.message;
+        this.cdr.detectChanges(); // Check after success message
 
-      // Store user data in localStorage for session (same key as AuthService)
-      const userData = { userId: 1, name: validUsername, role: 'Admin' };
-      localStorage.setItem('hotel_auth_user', JSON.stringify(userData));
-
-      // Update AuthService signals for proper authentication state
-      this.authService.currentUser.set(userData);
-      this.authService.isLoggedIn.set(true);
-
-      // Small delay for success animation
-      setTimeout(() => {
-        this.router.navigate([this.returnUrl]);
-      }, 500);
-    } else {
-      this.errorMessage = 'Invalid username or password';
+        setTimeout(() => {
+          this.router.navigate([this.returnUrl]);
+        }, 500);
+      } else {
+        this.errorMessage = result.message;
+        this.isLoading = false;
+        this.cdr.detectChanges(); // Check after error
+      }
+    } catch (error) {
+      console.error('Login component error:', error);
+      this.errorMessage = 'An unexpected error occurred. Please try again.';
       this.isLoading = false;
+      this.cdr.detectChanges(); // Check after catch
     }
   }
 }

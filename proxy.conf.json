@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "http://apibook.dorwaila.com/api",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

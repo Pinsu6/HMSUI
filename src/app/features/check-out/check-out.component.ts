@@ -6,7 +6,7 @@ import { BillingService } from '../../core/services/billing.service';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { Booking, Charge, CheckOutDto, CreateInvoiceDto, AdditionalChargeDto } from '../../core/models/models';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CheckOutResolved } from '../../core/resolvers/check-out.resolver';
 
 @Component({
@@ -65,11 +65,13 @@ export class CheckOutComponent implements OnInit {
     private bookingService: BookingService,
     private billingService: BillingService,
     private invoiceService: InvoiceService,
+    private router: Router,
     private route: ActivatedRoute,
     public settingsService: SettingsService
   ) { }
 
   ngOnInit(): void {
+    this.taxSettings = this.settingsService.getTaxSettings();
     const resolved = this.route.snapshot.data['data'] as CheckOutResolved | undefined;
     if (resolved) {
       this.activeBookings = resolved.activeBookings;
@@ -150,12 +152,31 @@ export class CheckOutComponent implements OnInit {
     return this.subtotal - this.calculatedDiscount;
   }
 
+  // Tax Settings
+  taxSettings!: any; // Will be loaded in ngOnInit
+
+  get taxPercentage(): number {
+    if (this.taxSettings.enableGst) {
+      // Assuming intra-state (CGST + SGST) for simplicity as per common hotel logic
+      // or if IGST is preferred, one could use that. defaulting to CGST+SGST sum.
+      return (this.taxSettings.cgstRate || 0) + (this.taxSettings.sgstRate || 0);
+    }
+    return 0;
+  }
+
+  get serviceChargeAmount(): number {
+    if (this.taxSettings.enableServiceCharge) {
+      return Math.round(this.afterDiscount * (this.taxSettings.serviceChargeRate / 100));
+    }
+    return 0;
+  }
+
   get taxAmount(): number {
-    return Math.round(this.afterDiscount * 0.18);
+    return Math.round(this.afterDiscount * (this.taxPercentage / 100));
   }
 
   get totalAmount(): number {
-    return this.afterDiscount + this.taxAmount;
+    return this.afterDiscount + this.taxAmount + this.serviceChargeAmount;
   }
 
   get balanceAmount(): number {
@@ -259,7 +280,7 @@ export class CheckOutComponent implements OnInit {
         totalNights: this.getNights(this.selectedBooking),
         roomRate: this.selectedBooking.room?.roomType?.baseRate || 0,
         subTotal: this.subtotal,
-        taxPercentage: 18,
+        taxPercentage: this.taxPercentage,
         taxAmount: this.taxAmount,
         discount: this.calculatedDiscount,
         grandTotal: this.totalAmount,
@@ -280,6 +301,9 @@ export class CheckOutComponent implements OnInit {
       alert(`Check-out successful for Room ${this.selectedBooking?.room?.number}!\n\nTotal: ${this.settingsService.getCurrencySymbol()}${this.totalAmount}\nBalance: ${this.settingsService.getCurrencySymbol()}${this.balanceAmount}\n\nWiFi access has been deactivated.\nRoom marked as "Dirty" for cleaning.`);
       this.closeModal();
       this.loadActiveBookings();
+
+      // Redirect to billing to show the invoice
+      this.router.navigate(['/billing']);
     } catch (err) {
       this.submitting = false;
       console.error('Check-out failed:', err);

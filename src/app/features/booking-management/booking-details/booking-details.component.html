@@ -125,7 +125,8 @@
 
         <div class="payment-row total border-t pt-md mt-md">
           <span>Total Amount</span>
-          <span class="amount-total">{{ settingsService.getCurrencySymbol() }}{{ booking.totalAmount | number:'1.2-2'
+          <span class="amount-total">{{ settingsService.getCurrencySymbol() }}{{ (booking.totalAmount + totalCharges) |
+            number:'1.2-2'
             }}</span>
         </div>
       </div>

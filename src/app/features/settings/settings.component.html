@@ -11,35 +11,43 @@
   <div class="settings-layout">
     <!-- Sidebar Navigation -->
     <div class="settings-nav">
-      <button class="nav-item" [class.active]="activeTab === 'general'" [routerLink]="['/settings', 'general']">
+      <button class="nav-item" *ngIf="isTabVisible('general')" [class.active]="activeTab === 'general'"
+        [routerLink]="['/settings', 'general']">
         <span class="nav-icon">🏨</span>
         <span class="nav-label">Hotel Information</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'tax'" [routerLink]="['/settings', 'tax']">
+      <button class="nav-item" *ngIf="isTabVisible('tax')" [class.active]="activeTab === 'tax'"
+        [routerLink]="['/settings', 'tax']">
         <span class="nav-icon">📋</span>
         <span class="nav-label">Tax Settings</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'wifi'" [routerLink]="['/settings', 'wifi']">
+      <button class="nav-item" *ngIf="isTabVisible('wifi')" [class.active]="activeTab === 'wifi'"
+        [routerLink]="['/settings', 'wifi']">
         <span class="nav-icon">📶</span>
         <span class="nav-label">WiFi Integration</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'users'" [routerLink]="['/settings', 'users']">
+      <button class="nav-item" *ngIf="isTabVisible('users')" [class.active]="activeTab === 'users'"
+        [routerLink]="['/settings', 'users']">
         <span class="nav-icon">👥</span>
         <span class="nav-label">User Management</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'services'" [routerLink]="['/settings', 'services']">
+      <button class="nav-item" *ngIf="isTabVisible('services')" [class.active]="activeTab === 'services'"
+        [routerLink]="['/settings', 'services']">
         <span class="nav-icon">🛎️</span>
         <span class="nav-label">Add Services</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'roomtypes'" [routerLink]="['/settings', 'roomtypes']">
+      <button class="nav-item" *ngIf="isTabVisible('roomtypes')" [class.active]="activeTab === 'roomtypes'"
+        [routerLink]="['/settings', 'roomtypes']">
         <span class="nav-icon">🛏️</span>
         <span class="nav-label">Room Types</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'currency'" [routerLink]="['/settings', 'currency']">
+      <button class="nav-item" *ngIf="isTabVisible('currency')" [class.active]="activeTab === 'currency'"
+        [routerLink]="['/settings', 'currency']">
         <span class="nav-icon">💰</span>
         <span class="nav-label">Currency</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab === 'backup'" [routerLink]="['/settings', 'backup']">
+      <button class="nav-item" *ngIf="isTabVisible('backup')" [class.active]="activeTab === 'backup'"
+        [routerLink]="['/settings', 'backup']">
         <span class="nav-icon">💾</span>
         <span class="nav-label">Backup & Data</span>
       </button>
@@ -249,7 +257,7 @@
             <h2 class="panel-title">👥 User Management</h2>
             <p class="panel-description">Manage system users and their roles</p>
           </div>
-          <button class="btn btn-primary" (click)="showAddUserModal = true">
+          <button class="btn btn-primary" (click)="openAddUserModal()">
             ➕ Add User
           </button>
         </div>
@@ -285,7 +293,7 @@
                 <td>{{ user.lastLogin }}</td>
                 <td>
                   <div class="action-buttons">
-                    <button class="btn btn-sm btn-ghost" title="Edit">✏️</button>
+                    <button class="btn btn-sm btn-ghost" title="Edit" (click)="editUser(user)">✏️</button>
                     <button class="btn btn-sm btn-ghost" title="Toggle Status" (click)="toggleUserStatus(user)">
                       {{ user.status === 'active' ? '🔒' : '🔓' }}
                     </button>
@@ -579,7 +587,7 @@
   <div class="modal-overlay" [class.active]="showAddUserModal" (click)="showAddUserModal = false">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3 class="modal-title">Add New User</h3>
+        <h3 class="modal-title">{{ isEditingUser ? 'Edit User' : 'Add New User' }}</h3>
         <button class="btn btn-icon btn-ghost" (click)="showAddUserModal = false">✕</button>
       </div>
       <div class="modal-body">
@@ -591,7 +599,7 @@
           <label class="form-label">Email</label>
           <input type="email" class="form-input" [(ngModel)]="newUser.email" placeholder="Enter email address">
         </div>
-        <div class="form-group">
+        <div class="form-group" *ngIf="!isEditingUser">
           <label class="form-label">Password</label>
           <input type="password" class="form-input" [(ngModel)]="newUser.password" placeholder="Enter password">
         </div>
@@ -606,7 +614,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="showAddUserModal = false">Cancel</button>
-        <button class="btn btn-primary" (click)="addUser()">Add User</button>
+        <button class="btn btn-primary" (click)="saveUser()">{{ isEditingUser ? 'Update User' : 'Add User' }}</button>
       </div>
     </div>
   </div>

@@ -2,8 +2,8 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <h1 class="page-title">Guest Management</h1>
-      <p class="page-subtitle">Manage guest profiles and visit history</p>
+      <h1 class="page-title">Customer Management</h1>
+      <p class="page-subtitle">Manage customer profiles and visit history</p>
     </div>
     <!-- <div class="header-actions">
       <button class="btn btn-primary" (click)="showAddGuestModal = true">
@@ -271,13 +271,17 @@
       </div>
       <div class="modal-body">
         <div class="detail-tabs">
-          <button class="detail-tab active">Profile</button>
-          <button class="detail-tab">Booking History</button>
-          <button class="detail-tab">Preferences</button>
+          <button class="detail-tab" [class.active]="activeDetailTab === 'profile'"
+            (click)="activeDetailTab = 'profile'">Profile</button>
+          <button class="detail-tab" [class.active]="activeDetailTab === 'history'"
+            (click)="activeDetailTab = 'history'">Booking History</button>
+          <!-- <button class="detail-tab" [class.active]="activeDetailTab === 'preferences'" 
+                  (click)="activeDetailTab = 'preferences'">Preferences</button> -->
         </div>
 
         <div class="detail-content">
-          <div class="detail-grid">
+          <!-- Profile Tab -->
+          <div class="detail-grid" *ngIf="activeDetailTab === 'profile'">
             <div class="detail-card">
               <h4>Contact Information</h4>
               <div class="detail-item">
@@ -350,6 +354,35 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Booking History Tab -->
+          <div class="history-list" *ngIf="activeDetailTab === 'history'">
+            <div class="history-card" *ngFor="let booking of guestHistory">
+              <div class="history-header">
+                <div>
+                  <span class="history-date">{{ booking.checkInTime | date:'mediumDate' }} - {{
+                    (booking.actualCheckOutTime || booking.expectedCheckOutTime) | date:'mediumDate' }}</span>
+                  <span class="history-room">Room {{ booking.room?.number || 'N/A' }}</span>
+                </div>
+                <span class="status-badge" [class]="booking.status.toLowerCase()">{{ booking.status }}</span>
+              </div>
+              <div class="history-details">
+                <span class="history-amount">Total: {{ settingsService.getCurrencySymbol() }}{{ booking.totalAmount |
+                  number }}</span>
+                <span class="history-nights">
+                  {{ (booking.actualCheckOutTime || booking.expectedCheckOutTime) | date:'shortTime' }}
+                </span>
+              </div>
+            </div>
+            <div class="empty-history" *ngIf="guestHistory.length === 0">
+              <p>No booking history found.</p>
+            </div>
+          </div>
+
+          <!-- Preferences Tab -->
+          <div class="preferences-panel" *ngIf="activeDetailTab === 'preferences'">
+            <p>No preferences recorded.</p>
           </div>
         </div>
       </div>

@@ -132,15 +132,16 @@ export class BookingDetailsComponent implements OnInit {
 
       this.charges.push(displayCharge);
 
-      if (this.booking.totalAmount !== undefined) {
-        this.booking.totalAmount += this.newCharge.amount;
-      }
-
       // Clear form
       this.newCharge = { description: '', amount: 0, category: 'Service' };
 
       alert('Charge added successfully');
-      this.showAddChargeModal = false;
+
+      // Force update in next tick to ensure modal closes even if browser was blocked
+      setTimeout(() => {
+        this.showAddChargeModal = false;
+        this.cdr.detectChanges();
+      }, 50);
     } catch (err) {
       console.error('Failed to add charge:', err);
       alert('Failed to add charge');
